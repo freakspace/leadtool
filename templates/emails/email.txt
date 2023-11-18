@@ -1,0 +1,10 @@
+Hej {{contact_name}}
+
+Jeg var på udkig efter {{industry}} i {% if area %}{{area}}{% else %}{{city}}{% endif %} og fandt {{link}}
+
+Jeg bemærkede et par ting på hjemmesiden der godt kunne forbedres så i kan få flere henvendelser
+
+Må jeg sende en kort video og forklare? 100% gratis selvfølgelig
+
+De bedste hilsner
+Emil Nielsen

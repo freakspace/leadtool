@@ -1,0 +1,53 @@
+
+<form method="post" hx-post="/" hx-target="this" class="container my-4">
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="text" class="form-control" name="email" id="email" value="{{ email }}">
+    </div>
+    
+    <div class="mb-3">
+        <label for="email_content" class="form-label">Content</label>
+        <textarea class="form-control" name="email_content" id="email_content" rows="14">{{ email_content|safe }}</textarea>
+    </div>
+    
+    <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
+    <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+</form>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Data</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>ID</td>
+            <td>{{ id }}</td>
+        </tr>
+        <tr>
+            <td>Link</td>
+            <td>{{ link }}</td>
+        </tr>
+        <tr>
+            <td>Email</td>
+            <td>{{ email }}</td>
+        </tr>
+        <tr>
+            <td>Name</td>
+            <td>{{ name }}</td>
+        </tr>
+        <tr>
+            <td>Industry</td>
+            <td>{{ industry }}</td>
+        </tr>
+        <tr>
+            <td>City</td>
+            <td>{{ city }}</td>
+        </tr>
+        <tr>
+            <td>Area</td>
+            <td>{{ area }}</td>
+        </tr>
+    </tbody>
+</table>
