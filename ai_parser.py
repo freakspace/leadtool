@@ -37,6 +37,8 @@ def get_user_message(content: str, keys: list, extra_instructions: str = None):
     {content}
 
     Remember to output as JSON and write the json key EXACTLY as written above {', '.join(str(key) for key in keys)}
+
+    In terms of the 'contact_name' key, this can either be company name OR an actual name. Sometimes the name of the person is reflected by the email. for example john@example.com.
     """,
     }
     {extra_instructions}
@@ -46,13 +48,13 @@ def get_user_message(content: str, keys: list, extra_instructions: str = None):
 
 def complete_chat(content: str, keys: list, extra_instructions: str = None):
     message = get_user_message(content, keys, extra_instructions)
-    print("TEST A")
+
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
         response_format={"type": "json_object"},
         messages=[system_message, message],
     )
-    print("TEST B")
+
     return completion
 
 
@@ -117,6 +119,3 @@ def ai_parser(outfolder: str, keys: list, attempts: int = 3):
             new_area=data["area"],
             new_parsed=1,
         )
-
-        print(data)
-        # {'e-mail': 'None', 'contact_name': 'None', 'industry': 'None', 'city': 'None', 'area': 'None'}

@@ -16,15 +16,9 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-
-# TODO Parse google sheets DONE
-# TODO Create links DONE
-# TODO Loop through db and parse links DONE
-# TODO Save as content DONE
-# TODO Loop through content, extract information
-# TODO Update links with information
-# TODO Create interface to prepare emails
-# TODO Get business name
+# TODO Create a service that schedules send emails based on the email_event
+# TODO Update email_event when email has been sent
+# TODO add screenshot
 
 
 def main(config):

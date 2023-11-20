@@ -2,11 +2,12 @@ import os
 import sqlite3
 import functools
 import logging
+from datetime import datetime
 from typing import Optional
 
 from dotenv import load_dotenv
 
-from schema import Link
+from schema import Link, EmailEvent
 
 load_dotenv()
 
@@ -97,16 +98,23 @@ def db_create_link(link: str, conn=None, cursor=None):
         logging.error(f"Error adding link {link}: {e}")
 
 
-import logging
-
-
 @connection
 def db_create_email_event(
-    link_id: int, qc_result: int, email_content: str, conn=None, cursor=None
+    link_id: int,
+    qc_result: int,
+    email_content: str,
+    contacted_at: datetime = None,
+    conn=None,
+    cursor=None,
 ):
     try:
-        query = "INSERT INTO email_event (link_id, qc_result, email_content) VALUES (?, ?, ?)"
-        data = (link_id, qc_result, email_content)
+        # Check if contacted_at is provided, adjust query and data accordingly
+        if contacted_at:
+            query = "INSERT INTO email_event (link_id, qc_result, email_content, contacted_at) VALUES (?, ?, ?, ?)"
+            data = (link_id, qc_result, email_content, contacted_at)
+        else:
+            query = "INSERT INTO email_event (link_id, qc_result, email_content) VALUES (?, ?, ?)"
+            data = (link_id, qc_result, email_content)
 
         cursor.execute(query, data)
         conn.commit()
@@ -133,6 +141,23 @@ def db_get_links(conn=None, cursor=None):
     rows = cursor.fetchall()
 
     return rows
+
+
+@connection
+def db_get_events(conn=None, cursor=None):
+    query = "SELECT * FROM email_event"
+
+    cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    # Fetch column names from cursor.description
+    columns = [col[0] for col in cursor.description]
+
+    # Convert rows to list of dictionaries
+    events = [EmailEvent(**dict(zip(columns, row))) for row in rows]
+
+    return events
 
 
 @connection
@@ -212,6 +237,8 @@ def db_update_link_record(
         sql += "contact_name = ?, "
         params.append(new_contact_name)
     if new_industry is not None:
+        if isinstance(new_industry, list):
+            new_industry = ",".join(new_industry)
         sql += "industry = ?, "
         params.append(new_industry)
     if new_city is not None:
@@ -233,9 +260,9 @@ def db_update_link_record(
     # Add the WHERE clause to specify which record to update
     sql += " WHERE id = ?"
     params.append(link_id)
-
+    data = tuple(params)
     # Execute the SQL command
-    cursor.execute(sql, tuple(params))
+    cursor.execute(sql, data)
     conn.commit()
 
 

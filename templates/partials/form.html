@@ -1,53 +1,80 @@
 
-<form method="post" hx-post="/" hx-target="this" class="container my-4">
-    <div class="mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input type="text" class="form-control" name="email" id="email" value="{{ email }}">
+<div class="row" id="form-wrapper">
+    <div id="error-alert" class="alert alert-danger alert-dismissible fade show" role="alert" style="display: none;">
+        <span id="error-message"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    
-    <div class="mb-3">
-        <label for="email_content" class="form-label">Content</label>
-        <textarea class="form-control" name="email_content" id="email_content" rows="14">{{ email_content|safe }}</textarea>
+    <form method="post" hx-post="/" hx-target="#form-wrapper" class="col my-4">
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="text" class="form-control" name="email" id="email" value="{{ email }}">
+        </div>
+        
+        <div class="mb-3">
+            <label for="email_content" class="form-label">Content</label>
+            <textarea class="form-control" name="email_content" id="email_content" rows="14">{{ email_content|safe }}</textarea>
+        </div>
+        
+        <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
+        <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+        <button type="submit" name="action" value="sent" class="btn btn-primary">Sent</button>
+        <button type="submit" name="action" value="schedule" class="btn btn-primary">Schedule - Send to mailgun</button>
+    </form>
+    <div class="col">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ID</td>
+                    <td>{{ id }}</td>
+                </tr>
+                <tr>
+                    <td>Link</td>
+                    <td>{{ link }}</td>
+                </tr>
+                <tr>
+                    <td>Email</td>
+                    <td>{{ email }}</td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>{{ name }}</td>
+                </tr>
+                <tr>
+                    <td>Industry</td>
+                    <td>{{ industry }}</td>
+                </tr>
+                <tr>
+                    <td>City</td>
+                    <td>{{ city }}</td>
+                </tr>
+                <tr>
+                    <td>Area</td>
+                    <td>{{ area }}</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    
-    <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
-    <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
-</form>
-<table class="table">
-    <thead>
-        <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Data</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>ID</td>
-            <td>{{ id }}</td>
-        </tr>
-        <tr>
-            <td>Link</td>
-            <td>{{ link }}</td>
-        </tr>
-        <tr>
-            <td>Email</td>
-            <td>{{ email }}</td>
-        </tr>
-        <tr>
-            <td>Name</td>
-            <td>{{ name }}</td>
-        </tr>
-        <tr>
-            <td>Industry</td>
-            <td>{{ industry }}</td>
-        </tr>
-        <tr>
-            <td>City</td>
-            <td>{{ city }}</td>
-        </tr>
-        <tr>
-            <td>Area</td>
-            <td>{{ area }}</td>
-        </tr>
-    </tbody>
-</table>
+</div>
+<!-- HTMX script to handle JSON response and display the error message if present -->
+<script>
+    document.body.addEventListener('htmx:responseError', function(event) {
+        var response = event.detail.xhr.response;
+        try {
+            var jsonResponse = JSON.parse(response);
+            if (jsonResponse.message) {
+                var errorAlert = document.getElementById('error-alert');
+                var errorMessageDiv = document.getElementById('error-message');
+                errorAlert.style.display = 'block';
+                errorMessageDiv.innerText = jsonResponse.message;
+            }
+        } catch (e) {
+            console.error('Could not parse JSON response', e);
+        }
+    });
+    </script>
