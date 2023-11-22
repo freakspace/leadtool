@@ -2,19 +2,21 @@ from datetime import datetime
 from flask import Flask, render_template, request, jsonify
 from jinja2 import Template
 
-from database import db_get_lead, db_create_email_event, db_get_events
+from database import db_get_lead, db_create_email_event, db_get_events, get_next_email_event_date
 
 from mailgun import schedule_email
 
 from schema import Link
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='content')
 
 # TODO Delete lead / Skip lead
-# TODO Add copy buttons to template
 # TODO Option to add lists (as in industries)
 # TODO Option to move lead from list to list
-
+# TODO Importing a new list should check for dublicate emails
+# TODO 1. Create new campaign, 2. Upload list, 3. Define template, 4. Define keywords (such as industry), 5. Define timeframe, domains, frequency etc.
+# TODO Make domain a link
+# TODO Add screenshot
 
 def get_lead():
     lead: Link = db_get_lead()
@@ -33,6 +35,8 @@ def get_lead():
         "industry": lead.industry,
         "city": lead.city,
         "area": lead.area,
+        "screenshot": f"content/{lead.link}.png",
+        "email_subject": "Et par ideer",
     }
 
     # Render the template content with the updated context
@@ -50,12 +54,13 @@ def home():
     if not context:
         return render_template("no_leads.html")
 
-    contacted_at = None
+    deliverytime = None
 
     if request.method == "POST":
         action = request.form.get("action")
 
         email = request.form.get("email")
+        email_subject = request.form.get("email_subject")
         email_content = request.form.get("email_content")
 
         if action == "reject":
@@ -63,29 +68,25 @@ def home():
             qc_result = 0
         elif action == "sent":
             qc_result = 1
-            contacted_at = datetime.now()
+            deliverytime = datetime.now()
         elif action == "schedule":
-            # TODO Get random domain
             # TODO Remember to change to_email
-            request = schedule_email(
-                domain="sandbox3409de04326a4d1cbf4b0fe0c754fcea.mailgun.org",
-                from_email="Emil Nielsen <emil@sandbox3409de04326a4d1cbf4b0fe0c754fcea.mailgun.org>",
+            #try:
+            deliverytime = schedule_email(
                 to_email="hej@emilnielsen.com",
-                subject="Et par ideer",
-                text=email_content,
+                subject=email_subject,
+                text=email_content
             )
-
             qc_result = 1
-            contacted_at = datetime.now()
-            if request != 200:
-                return jsonify(message=request.text), 400
+            """ except Exception as e:
+                return jsonify(message=str(e)), 400 """
 
         #  Create email event
         db_create_email_event(
             link_id=context["id"],
             qc_result=qc_result,
             email_content=email_content,
-            contacted_at=contacted_at,
+            deliverytime=deliverytime,
         )
 
         # Get a new lead

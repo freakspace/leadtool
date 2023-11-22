@@ -2,7 +2,7 @@ import os
 import sqlite3
 import functools
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from dotenv import load_dotenv
@@ -63,7 +63,7 @@ CREATE TABLE link(
 """
     )
 
-
+# TODO Add subject
 @connection
 def create_email_event_table(conn=None, cursor=None):
     cursor.execute(
@@ -88,7 +88,6 @@ def db_create_link(link: str, conn=None, cursor=None):
         data = (link,)
 
         cursor.execute(query, data)
-        # conn.commit() # TODO Nessesary=?
 
         if cursor.rowcount == 0:
             logging.warning(f"Link {link} already exists in the database.")
@@ -97,27 +96,26 @@ def db_create_link(link: str, conn=None, cursor=None):
     except Exception as e:
         logging.error(f"Error adding link {link}: {e}")
 
-
+# TODO Change contacted_at to deliverytime
 @connection
 def db_create_email_event(
     link_id: int,
     qc_result: int,
     email_content: str,
-    contacted_at: datetime = None,
+    deliverytime: datetime = None,
     conn=None,
     cursor=None,
 ):
     try:
         # Check if contacted_at is provided, adjust query and data accordingly
-        if contacted_at:
+        if deliverytime:
             query = "INSERT INTO email_event (link_id, qc_result, email_content, contacted_at) VALUES (?, ?, ?, ?)"
-            data = (link_id, qc_result, email_content, contacted_at)
+            data = (link_id, qc_result, email_content, deliverytime)
         else:
             query = "INSERT INTO email_event (link_id, qc_result, email_content) VALUES (?, ?, ?)"
             data = (link_id, qc_result, email_content)
 
         cursor.execute(query, data)
-        conn.commit()
 
         if cursor.rowcount == 0:
             logging.warning(
@@ -145,11 +143,18 @@ def db_get_links(conn=None, cursor=None):
 
 @connection
 def db_get_events(conn=None, cursor=None):
-    query = "SELECT * FROM email_event"
+    query = """
+        SELECT link.link, email_event.contacted_at
+        FROM email_event
+        INNER JOIN link ON email_event.link_id = link.id
+        WHERE email_event.contacted_at IS NOT 'None'
+        """
 
     cursor.execute(query)
 
     rows = cursor.fetchall()
+
+    print(rows)
 
     # Fetch column names from cursor.description
     columns = [col[0] for col in cursor.description]
@@ -171,7 +176,60 @@ def db_get_links_for_parsing(conn=None, cursor=None):
     return rows
 
 
-from typing import Optional
+@connection
+def get_latest_email_event_date(conn=None, cursor=None):
+    cursor.execute("SELECT MAX(contacted_at) FROM email_event")
+    latest_date = cursor.fetchone()[0]
+    return latest_date
+
+
+# TODO Return time as well
+
+@connection
+def get_next_email_event_date(conn=None, cursor=None):
+    latest_date = get_latest_email_event_date()
+
+    # Check if latest_date is not None and is a string, then convert to date
+    if latest_date is not None and isinstance(latest_date, str):
+        latest_date_str = latest_date.split(' ')[0]
+        latest_date = datetime.strptime(latest_date_str, "%Y-%m-%d").date()
+    else:
+        # If there are no email events, use today's date
+        return datetime.now().date()
+
+    today = datetime.now().date()
+
+    # Check if the latest email_event is more than 3 days in the future
+    delta = latest_date - today
+    days = delta.days
+    if days > 3:
+        raise Exception("Can't schedule more than 3 days in the future..")
+
+    # If the latest email_event is before today, then return today
+    if latest_date < today:
+        return today
+
+    # If the latest email_event is today or later, count the email_events for that day
+    cursor.execute(
+        "SELECT COUNT(*) FROM email_event WHERE DATE(contacted_at) = ?", (latest_date,))
+    count = cursor.fetchone()[0]
+
+    # If the count is less than 60, return that day
+    if count < 20:
+        return latest_date
+
+    # Calculate the next day
+    next_day = latest_date + timedelta(days=1)
+
+    # Check if next_day is more than 3 days in the future
+    delta = next_day - today
+    days = delta.days
+    if days > 3:
+        raise Exception("Can't schedule more than 3 days in the future..")
+
+    # Return next_day if it's within the 3-day limit
+    return next_day
+
 
 
 @connection

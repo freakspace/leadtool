@@ -25,11 +25,12 @@ class Link(BaseModel):
 
 
 class EmailEvent(BaseModel):
-    id: int
-    link_id: int
-    qc_result: int
-    qc_date: Optional[datetime]  # Use Optional if the field can be null
-    email_content: str
+    # id: int
+    # link_id: int
+    link: str
+    # qc_result: int
+    # qc_date: Optional[datetime]  # Use Optional if the field can be null
+    # email_content: str
     contacted_at: Optional[datetime]  # Use Optional if the field can be null
 
     class Config:

@@ -13,6 +13,7 @@ webdriver-manager = "*"
 typing-extensions = "*"
 flask = "*"
 pydantic = "*"
+pytz = "*"
 
 [dev-packages]
 
