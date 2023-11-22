@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, abort, Response
 
 from database import (
     db_get_lead,
+    db_get_leads,
     db_create_lead,
     db_delete_link,
     db_create_campaign,
@@ -11,15 +12,9 @@ from database import (
 
 from schema import Link
 
-app = Flask(__name__, static_folder="content")
+from utils import generate_csv
 
-# TODO Delete lead / Skip lead
-# TODO Option to add lists (as in industries)
-# TODO Option to move lead from list to list
-# TODO Importing a new list should check for dublicate emails
-# TODO 1. Create new campaign, 2. Upload list, 3. Define template, 4. Define keywords (such as industry), 5. Define timeframe, domains, frequency etc.
-# TODO Make domain a link
-# TODO Add screenshot
+app = Flask(__name__, static_folder="content")
 
 
 def get_lead():
@@ -58,13 +53,16 @@ def home():
 
 @app.route("/<campaign_name>", methods=["GET", "POST"])
 def campaign(campaign_name):
-    campaign_id, campaign_name, _ = db_get_campaign(campaign_name=campaign_name)
+    campaign = db_get_campaign(campaign_name=campaign_name)
 
     if not campaign:
-        print("No campaign..")
+        abort(404)
+
+    campaign_id, campaign_name, _ = campaign
 
     context = get_lead()
     context["campaign"] = campaign_name
+    context["campaign_id"] = campaign_id
 
     if not context:
         return render_template("no_leads.html")
@@ -95,23 +93,22 @@ def campaign(campaign_name):
         context = get_lead()
 
         context["campaign"] = campaign_name
+        context["campaign_id"] = campaign_id
 
         return render_template("partials/form.html", **context)
 
-    return render_template("index.html", **context)
+    return render_template("campaign.html", **context)
 
 
-@app.route("/events", methods=["GET", "POST"])
-def events():
-    events = db_get_events()
-
-    if not events:
-        return render_template("no_events.html")
-
-    if request.method == "POST":
-        pass
-
-    return render_template("events.html", events=events)
+@app.route("/download-csv/<campaign_id>")
+def download_csv(campaign_id):
+    leads = db_get_leads(campaign_id)
+    csv_content = generate_csv(leads)
+    return Response(
+        csv_content,
+        mimetype="text/csv",
+        headers={"Content-disposition": "attachment; filename=export.csv"},
+    )
 
 
 if __name__ == "__main__":

@@ -274,6 +274,16 @@ def db_get_lead(conn=None, cursor=None) -> Optional[Link]:
 
 
 @connection
+def db_get_leads(campaign_id, conn=None, cursor=None):
+    query = "SELECT email, name, domain, pronoun FROM lead WHERE campaign_id = ?"
+
+    cursor.execute(query, (campaign_id,))
+    rows = cursor.fetchall()
+
+    return rows
+
+
+@connection
 def db_update_link_record(
     link_id,
     new_link=None,

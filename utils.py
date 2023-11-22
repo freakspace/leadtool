@@ -1,3 +1,5 @@
+import io
+import csv
 from urllib.parse import urlparse
 
 
@@ -15,3 +17,14 @@ def extract_domain(url):
     domain = domain.split(":")[0]  # Removes port number if it exists
 
     return domain
+
+
+def generate_csv(leads):
+    # Generate CSV in memory
+    si = io.StringIO()
+    cw = csv.writer(si)
+    cw.writerow(["email", "name", "domain", "pronoun"])
+    cw.writerows(leads)
+    output = si.getvalue()
+    si.close()
+    return output

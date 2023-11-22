@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container">
+    <div class="row">
+        <h1 class="fw-bolder">{{campaign|capitalize}}</h1>
+        <form action="/download-csv/{{campaign_id}}" method="get">
+            <button class="btn btn-primary" type="submit">Download CSV</button>
+        </form>
+        {% include 'partials/form.html' %}
+    </div>
+</div>
+{% endblock body %}
