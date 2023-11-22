@@ -15,6 +15,7 @@ from datetime import datetime, timedelta, date
 import pytz
 import random
 
+
 def get_random_time_rfc2822(date_str):
     # Define the timezone for GMT+1
     timezone = pytz.timezone("Etc/GMT-1")
@@ -31,17 +32,20 @@ def get_random_time_rfc2822(date_str):
         raise TypeError("date_str must be a string or datetime.date")
 
     # Define the start and end times in the GMT+1 timezone
-    start_time = datetime.combine(base_date, datetime.min.time(), timezone) + timedelta(hours=10)
+    start_time = datetime.combine(base_date, datetime.min.time(), timezone) + timedelta(
+        hours=10
+    )
     end_time = start_time + timedelta(hours=1, minutes=30)
 
     # Calculate a random time between start_time and end_time
-    random_time_in_seconds = random.randint(0, int((end_time - start_time).total_seconds()))
+    random_time_in_seconds = random.randint(
+        0, int((end_time - start_time).total_seconds())
+    )
     random_time = start_time + timedelta(seconds=random_time_in_seconds)
 
     # Format the random time according to RFC-2822
     formatted_time = random_time.strftime("%a, %d %b %Y %H:%M:%S %z")
     return formatted_time
-
 
 
 def schedule_email(to_email, subject, text):
@@ -69,5 +73,5 @@ def schedule_email(to_email, subject, text):
 
     if mailgun_request.status_code != 200:
         raise Exception(mailgun_request.text)
-    
+
     return deliverytime

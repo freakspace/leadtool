@@ -4,7 +4,10 @@
         <span id="error-message"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <form method="post" hx-post="/" hx-target="#form-wrapper" class="col my-4">
+    <h1 class="fw-bolder">{{campaign|capitalize}}</h1>
+    <form method="post" hx-post="{{ url_for('campaign', campaign_name=campaign) }}" hx-target="#form-wrapper" class="col my-4">
+
+        <input type="text" class="form-control" name="id" id="id" value="{{ id }}" hidden>
 
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
@@ -12,18 +15,27 @@
         </div>
 
         <div class="mb-3">
-            <label for="email_subject" class="form-label">Subject</label>
-            <input type="text" class="form-control" name="email_subject" id="email_subject" value="{{ email_subject }}">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" name="name" id="name" value="{{ name }}">
         </div>
-        
+
         <div class="mb-3">
-            <label for="email_content" class="form-label">Content</label>
-            <textarea class="form-control" name="email_content" id="email_content" rows="14">{{ email_content|safe }}</textarea>
+            <label for="link" class="form-label">Domain</label>
+            <input type="text" class="form-control" name="link" id="link" value="{{ link }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="pronoun" class="form-label">Pronoun</label>
+            <input type="text" class="form-control" name="pronoun" id="pronoun" value="i">
+        </div>
+
+        <div class="mb-3">
+            <label for="area" class="form-label">Area</label>
+            <input type="text" class="form-control" name="area" id="area" value="{{ city }}">
         </div>
         
-        <button type="submit" name="action" value="schedule" class="btn btn-success">Schedule - Send to mailgun</button>
-        <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
-        <button type="submit" name="action" value="sent" class="btn btn-primary">Sent</button>
+        <button type="submit" name="action" value="accept" class="btn btn-primary">Accept</button>
+        <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
     </form>
     <div class="col">
         <table class="table">
@@ -37,14 +49,6 @@
                 <tr>
                     <td>ID</td>
                     <td>{{ id }}</td>
-                </tr>
-                <tr>
-                    <td>Link</td>
-                    <td>{{ link }}</td>
-                </tr>
-                <tr>
-                    <td>Email</td>
-                    <td>{{ email }}</td>
                 </tr>
                 <tr>
                     <td>Name</td>

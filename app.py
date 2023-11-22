@@ -1,14 +1,17 @@
-from datetime import datetime
-from flask import Flask, render_template, request, jsonify
-from jinja2 import Template
+from flask import Flask, render_template, request, redirect, url_for
 
-from database import db_get_lead, db_create_email_event, db_get_events, get_next_email_event_date
-
-from mailgun import schedule_email
+from database import (
+    db_get_lead,
+    db_create_lead,
+    db_delete_link,
+    db_create_campaign,
+    db_get_campaign,
+    db_get_campaigns,
+)
 
 from schema import Link
 
-app = Flask(__name__, static_folder='content')
+app = Flask(__name__, static_folder="content")
 
 # TODO Delete lead / Skip lead
 # TODO Option to add lists (as in industries)
@@ -18,14 +21,12 @@ app = Flask(__name__, static_folder='content')
 # TODO Make domain a link
 # TODO Add screenshot
 
+
 def get_lead():
     lead: Link = db_get_lead()
 
     if not lead:
         return None
-
-    with open("templates/emails/email.txt", "r", encoding="utf-8") as file:
-        email_template = file.read()
 
     context = {
         "id": lead.id,
@@ -36,61 +37,64 @@ def get_lead():
         "city": lead.city,
         "area": lead.area,
         "screenshot": f"content/{lead.link}.png",
-        "email_subject": "Et par ideer",
     }
-
-    # Render the template content with the updated context
-    jinja_template = Template(email_template)
-    email_content = jinja_template.render(**context)
-    context["email_content"] = email_content
 
     return context
 
 
 @app.route("/", methods=["GET", "POST"])
 def home():
+    if request.method == "POST":
+        campaign_name = request.form.get("campaign_name")
+        db_create_campaign(name=campaign_name)
+        # Redirect to the new campaign page
+        return redirect(url_for("campaign", campaign_name=campaign_name))
+
+    # Add code to retrieve existing campaigns from the database
+    existing_campaigns = db_get_campaigns()
+    campaigns = [campaign[1] for campaign in existing_campaigns]
+    return render_template("campaigns.html", campaigns=campaigns)
+
+
+@app.route("/<campaign_name>", methods=["GET", "POST"])
+def campaign(campaign_name):
+    campaign_id, campaign_name, _ = db_get_campaign(campaign_name=campaign_name)
+
+    if not campaign:
+        print("No campaign..")
+
     context = get_lead()
+    context["campaign"] = campaign_name
 
     if not context:
         return render_template("no_leads.html")
 
-    deliverytime = None
-
     if request.method == "POST":
         action = request.form.get("action")
-
+        id = request.form.get("id")
         email = request.form.get("email")
-        email_subject = request.form.get("email_subject")
-        email_content = request.form.get("email_content")
+        name = request.form.get("name")
+        link = request.form.get("link")
+        pronoun = request.form.get("pronoun")
+        area = request.form.get("area")
 
-        if action == "reject":
-            # Handle the reject action
-            qc_result = 0
-        elif action == "sent":
-            qc_result = 1
-            deliverytime = datetime.now()
-        elif action == "schedule":
-            # TODO Remember to change to_email
-            #try:
-            deliverytime = schedule_email(
-                to_email="hej@emilnielsen.com",
-                subject=email_subject,
-                text=email_content
+        if action == "delete":
+            db_delete_link(id=id)
+        elif action == "accept":
+            db_create_lead(
+                email=email,
+                name=name,
+                domain=link,
+                pronoun=pronoun,
+                campaign_id=campaign_id,
+                area=area,
             )
-            qc_result = 1
-            """ except Exception as e:
-                return jsonify(message=str(e)), 400 """
-
-        #  Create email event
-        db_create_email_event(
-            link_id=context["id"],
-            qc_result=qc_result,
-            email_content=email_content,
-            deliverytime=deliverytime,
-        )
+            db_delete_link(id=id)
 
         # Get a new lead
         context = get_lead()
+
+        context["campaign"] = campaign_name
 
         return render_template("partials/form.html", **context)
 
