@@ -48,6 +48,7 @@ def home():
     # Add code to retrieve existing campaigns from the database
     existing_campaigns = db_get_campaigns()
     campaigns = [campaign[1] for campaign in existing_campaigns]
+    print(campaigns)
     return render_template("campaigns.html", campaigns=campaigns)
 
 

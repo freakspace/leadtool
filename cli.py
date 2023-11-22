@@ -16,10 +16,6 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-# TODO Create a service that schedules send emails based on the email_event
-# TODO Update email_event when email has been sent
-# TODO add screenshot
-
 
 def main(config):
     # Create tables is they don't exists

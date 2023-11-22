@@ -1,19 +1,32 @@
 {% extends 'base.html' %}
 {% block body %}
-<div class="container">
+<div class="container border rounded-3 p-4 bg-light mt-5">
     <div class="row">
-        <form method="POST">
-            <label for="campaign_name">New Campaign Name:</label>
-            <input type="text" id="campaign_name" name="campaign_name" required>
-            <input type="submit" value="Create Campaign">
-        </form>
-    
-        <h2>Existing Campaigns</h2>
-        <ul>
-            {% for campaign in campaigns %}
-                <li><a href="{{ url_for('campaign', campaign_name=campaign) }}">{{ campaign}}</a></li>
-            {% endfor %}
-        </ul>
+        <div class="col-12">
+            <form method="POST" class="form-inline">
+                <div class="mb-3">
+                    <label for="campaign_name" class="form-label">New Campaign</label>
+                    <input type="text" id="campaign_name" name="campaign_name" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Campaign</button>
+            </form>
+        </div>
+        <hr class="mt-5 mb-4">
+        <div class="col-12">
+            <h3>Existing Campaigns</h3>
+            <div class="row">
+                {% for campaign in campaigns %}
+                    <div class="col-md-4 col-sm-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ campaign }}</h5>
+                                <a href="{{ url_for('campaign', campaign_name=campaign) }}" class="btn btn-secondary">View</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock body %}
