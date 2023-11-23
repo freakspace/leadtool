@@ -1,4 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, abort, Response
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    abort,
+    Response,
+    jsonify,
+)
+from jinja2 import Template
 
 from database import (
     db_get_lead,
@@ -50,6 +60,43 @@ def home():
     campaigns = [campaign[1] for campaign in existing_campaigns]
     print(campaigns)
     return render_template("campaigns.html", campaigns=campaigns)
+
+
+@app.route("/email-form", methods=["GET", "POST"])
+def email_form():
+    context = get_lead()
+
+    with open("templates/emails/email.txt", "r", encoding="utf-8") as file:
+        email_template = file.read()
+
+    jinja_template = Template(email_template)
+    email_content = jinja_template.render(**context)
+
+    context["email_subject"] = "Et par ideer"
+    context["email_content"] = email_content
+
+    if not context:
+        return render_template("no_leads.html")
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        id = request.form.get("id")
+
+        if action == "delete":
+            db_delete_link(id=id)
+
+        # Get a new lead
+        context = get_lead()
+
+        jinja_template = Template(email_template)
+        email_content = jinja_template.render(**context)
+
+        context["email_subject"] = "Et par ideer"
+        context["email_content"] = email_content
+
+        return render_template("partials/email-form.html", **context)
+
+    return render_template("email.html", **context)
 
 
 @app.route("/<campaign_name>", methods=["GET", "POST"])
