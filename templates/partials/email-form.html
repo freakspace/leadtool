@@ -7,7 +7,7 @@
     <form method="post" hx-post="{{ url_for('email_form') }}" hx-target="#form-wrapper" class="col my-4">
 
         <input type="text" class="form-control" name="id" id="id" value="{{ id }}" hidden>
-        
+
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <input type="text" class="form-control" name="email" id="email" value="{{ email }}">
@@ -23,6 +23,7 @@
             <textarea class="form-control" name="email_content" id="email_content" rows="14">{{ email_content|safe }}</textarea>
         </div>
         <p class="fw-bolder">Remember to manually send the email</p>
+        <button type="submit" name="action" value="sent" class="btn btn-success">Sent</button>
         <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
     </form>
     <div class="col">

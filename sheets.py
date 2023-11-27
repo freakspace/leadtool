@@ -2,7 +2,7 @@ import requests
 import csv
 from io import StringIO
 
-from database import db_create_link
+from database import db_create_link, db_get_sent
 from utils import extract_domain
 
 
@@ -28,4 +28,7 @@ def parse_sheet_save_url(spread_sheet_id: str, sheet_names: list):
 
         for row in reader:
             link = extract_domain(row[0])
-            db_create_link(link=link)
+
+            # Check if email has already been sent to domain
+            if not db_get_sent(domain=link):
+                db_create_link(link=link)

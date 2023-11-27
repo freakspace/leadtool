@@ -1,10 +1,11 @@
 import os
 import sys
 import json
-
+import threading
 import logging
+import asyncio
 
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 from database import db_get_links_for_parsing, db_update_link_record
 
@@ -14,7 +15,7 @@ if not api_key:
     print("No api key found in environment")
     sys.exit()
 
-client = OpenAI(api_key=api_key)
+client = AsyncOpenAI(api_key=api_key)
 
 
 system_message = {
@@ -46,10 +47,10 @@ def get_user_message(content: str, keys: list, extra_instructions: str = None):
     return user_message
 
 
-def complete_chat(content: str, keys: list, extra_instructions: str = None):
+async def async_complete_chat(content: str, keys: list, extra_instructions: str = None):
     message = get_user_message(content, keys, extra_instructions)
 
-    completion = client.chat.completions.create(
+    completion = await client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
         response_format={"type": "json_object"},
         messages=[system_message, message],
@@ -72,7 +73,7 @@ def has_required_keys(json_obj, required_keys):
     return all(key in json_obj for key in required_keys)
 
 
-def ai_parser(outfolder: str, keys: list, attempts: int = 3):
+async def async_ai_parser(outfolder: str, keys: list, attempts: int = 3):
     links = db_get_links_for_parsing()
 
     for id, path in links:
@@ -84,38 +85,102 @@ def ai_parser(outfolder: str, keys: list, attempts: int = 3):
         count = 0
         data = {}
 
-        while not has_required_keys(json_obj=data, required_keys=keys):
+        while (
+            not has_required_keys(json_obj=data, required_keys=keys)
+            and count < attempts
+        ):
             print(f"Parsing {path} [attempt {count+1}/{attempts}]")
-            if count == attempts:
-                db_update_link_record(link_id=id, new_parsed=1)
-                logging.warning(f"No data for {path}")
-                break
 
             extra_instructions = ""
-
             if count > 0:
                 extra_instructions = (
                     f"REMEMBER to return json object with these key: {keys}"
                 )
 
-            try:
-                response = complete_chat(content, keys, extra_instructions)
-
-                data = json.loads(response.choices[0].message.content)
-
-            except json.JSONDecodeError as e:
-                logging.error(f"Error loading json for {path}: {e}")
-
             count += 1
+
+            try:
+                # Wait for the async function with a timeout
+                response = await asyncio.wait_for(
+                    async_complete_chat(content, keys, extra_instructions), timeout=20
+                )
+                data.update(json.loads(response.choices[0].message.content))
+            except (json.JSONDecodeError, asyncio.TimeoutError) as e:
+                logging.error(f"Error or timeout for {path}: {e}")
+                continue  # Skip to the next iteration on error or timeout
 
         print(f"Updating {path} in database")
 
-        db_update_link_record(
-            link_id=id,
-            new_email=data["e-mail"],
-            new_contact_name=data["contact_name"],
-            new_industry=data["industry"],
-            new_city=data["city"],
-            new_area=data["area"],
-            new_parsed=1,
-        )
+        if data:
+            db_update_link_record(
+                link_id=id,
+                new_email=data.get("e-mail", ""),
+                new_contact_name=data.get("contact_name", ""),
+                new_industry=data.get("industry", ""),
+                new_city=data.get("city", ""),
+                new_area=data.get("area", ""),
+                new_parsed=1,
+            )
+        else:
+            logging.warning(f"No data for {path}")
+            db_update_link_record(link_id=id, new_parsed=1)
+
+
+""" def ai_parser(outfolder: str, keys: list, attempts: int = 3):
+    links = db_get_links_for_parsing()
+
+    for id, path in links:
+        file_path = f"{outfolder}/{path}.txt"
+        print(f"Opening {file_path}")
+        with open(file_path, "r", encoding="utf-8") as file:
+            content = file.read()
+
+        count = 0
+        data = {}
+        result = None
+
+        while not has_required_keys(json_obj=data, required_keys=keys) and count < attempts:
+            print(f"Parsing {path} [attempt {count+1}/{attempts}]")
+
+            extra_instructions = ""
+            if count > 0:
+                extra_instructions = f"REMEMBER to return json object with these key: {keys}"
+
+            count += 1
+
+            def call_complete_chat():
+                nonlocal result  # Use nonlocal to modify the outer scope variable
+                try:
+                    response = complete_chat(content, keys, extra_instructions)
+                    result = json.loads(response.choices[0].message.content)
+                except json.JSONDecodeError as e:
+                    logging.error(f"Error loading json for {path}: {e}")
+                    result = None
+
+            chat_thread = threading.Thread(target=call_complete_chat)
+            chat_thread.start()
+            chat_thread.join(timeout=20)
+
+            if chat_thread.is_alive():
+                logging.error(f"Timeout occurred for {path}")
+                chat_thread.join()
+                continue
+
+            if result:
+                data.update(result)
+
+        print(f"Updating {path} in database")
+
+        if data:
+            db_update_link_record(
+                link_id=id,
+                new_email=data.get("e-mail", ""),
+                new_contact_name=data.get("contact_name", ""),
+                new_industry=data.get("industry", ""),
+                new_city=data.get("city", ""),
+                new_area=data.get("area", ""),
+                new_parsed=1,
+            )
+        else:
+            logging.warning(f"No data for {path}")
+            db_update_link_record(link_id=id, new_parsed=1) """

@@ -32,9 +32,21 @@
             <label for="area" class="form-label">Area</label>
             <input type="text" class="form-control" name="area" id="area" value="{{ city }}">
         </div>
+
+        <div class="mb-3">
+            <label for="campaign" class="form-label">Alternative campaign</label>
+            <select name="campaign" class="form-select mt-3" aria-label="campaign-select">
+                <option value="" selected></option>
+                {% for campaign in campaigns %}
+                <option value="{{ campaign.0 }}">{{ campaign.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
         
         <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
         <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
+
     </form>
     <div class="col">
         <table class="table">

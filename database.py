@@ -12,6 +12,8 @@ load_dotenv()
 
 db_name = os.getenv("DB_NAME")
 
+# TODO Change link to domain
+
 
 def connection(func):
     @functools.wraps(func)
@@ -82,6 +84,18 @@ def create_lead_table(conn=None, cursor=None):
 
 
 @connection
+def create_sent_table(conn=None, cursor=None):
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS sent(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE,
+            domain TEXT UNIQUE)
+        """
+    )
+
+
+@connection
 def create_campaign_table(conn=None, cursor=None):
     cursor.execute(
         """
@@ -107,6 +121,28 @@ def db_create_link(link: str, conn=None, cursor=None):
             logging.info(f"Link {link} added to the database.")
     except Exception as e:
         logging.error(f"Error adding link {link}: {e}")
+
+
+@connection
+def db_create_sent(domain: str, email: str = None, conn=None, cursor=None):
+    """
+    Inserts a new record into the 'sent' table with the given domain and email.
+
+    Parameters:
+    domain (str): The domain to insert.
+    email (str): The email to insert. Default is None.
+
+    The function uses a connection decorator to handle the database connection.
+    """
+    query = "INSERT INTO sent (domain, email) VALUES (?, ?)"
+    data = (domain, email)
+
+    try:
+        cursor.execute(query, data)
+        conn.commit()  # Commit the transaction
+    except Exception as e:
+        print(domain)
+        print(f"An error occurred: {e}")
 
 
 @connection
@@ -250,7 +286,13 @@ def db_get_links_for_parsing(conn=None, cursor=None):
 
 @connection
 def db_get_lead(conn=None, cursor=None) -> Optional[Link]:
-    query = "SELECT * from link WHERE parsed = 1 AND email != 'None'"
+    # Query to select links that are parsed, have an email, and are not present in the 'sent' table
+    query = """
+    SELECT l.* FROM link l
+    LEFT JOIN sent s ON l.link = s.domain
+    WHERE l.parsed = 1 AND l.email != 'None' AND s.id IS NULL
+    LIMIT 1
+    """
     cursor.execute(query)
     row = cursor.fetchone()
 
@@ -281,6 +323,43 @@ def db_get_leads(campaign_id, conn=None, cursor=None):
     rows = cursor.fetchall()
 
     return rows
+
+
+@connection
+def db_get_sent(domain: str = None, email: str = None, conn=None, cursor=None):
+    """
+    Checks if there is a record in the 'sent' table that matches the given domain or email.
+
+    Parameters:
+    domain (str): The domain to search for. Default is None.
+    email (str): The email to search for. Default is None.
+
+    Returns:
+    bool: True if a matching record is found, False otherwise.
+    """
+    if domain is None and email is None:
+        return False
+
+    query_parts = []
+    params = []
+
+    if domain is not None:
+        query_parts.append("domain = ?")
+        params.append(domain)
+
+    if email is not None:
+        query_parts.append("email = ?")
+        params.append(email)
+
+    query = f"SELECT COUNT(*) FROM sent WHERE {' OR '.join(query_parts)}"
+
+    try:
+        cursor.execute(query, tuple(params))
+        result = cursor.fetchone()
+        return result[0] > 0
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False
 
 
 @connection
@@ -362,4 +441,5 @@ tables = {
     "link": create_link_table,
     "lead": create_lead_table,
     "campaign": create_campaign_table,
+    "sent": create_sent_table,
 }
