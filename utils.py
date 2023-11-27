@@ -23,7 +23,7 @@ def generate_csv(leads):
     # Generate CSV in memory
     si = io.StringIO()
     cw = csv.writer(si)
-    cw.writerow(["email", "name", "domain", "pronoun"])
+    cw.writerow(["email", "name", "domain", "pronoun", "area"])
     cw.writerows(leads)
     output = si.getvalue()
     si.close()

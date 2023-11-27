@@ -241,13 +241,19 @@ def db_create_campaign(
 
 
 @connection
-def db_get_campaign(campaign_name: str, conn=None, cursor=None):
-    query = "SELECT * FROM campaign WHERE name = ?"
-
-    cursor.execute(query, (campaign_name,))
+def db_get_campaign(
+    campaign_name: str = None, campaign_id: int = None, conn=None, cursor=None
+):
+    if campaign_name:
+        query = "SELECT * FROM campaign WHERE name = ?"
+        cursor.execute(query, (campaign_name,))
+    elif campaign_id is not None:
+        query = "SELECT * FROM campaign WHERE id = ?"
+        cursor.execute(query, (campaign_id,))
+    else:
+        raise ValueError("Either campaign_name or campaign_id must be provided")
 
     rows = cursor.fetchone()
-
     return rows
 
 
@@ -316,8 +322,14 @@ def db_get_lead(conn=None, cursor=None) -> Optional[Link]:
 
 
 @connection
+def db_delete_leads(campaign_id, conn=None, cursor=None):
+    query = "DELETE from lead where campaign_id = ?"
+    cursor.execute(query, (campaign_id,))
+
+
+@connection
 def db_get_leads(campaign_id, conn=None, cursor=None):
-    query = "SELECT email, name, domain, pronoun FROM lead WHERE campaign_id = ?"
+    query = "SELECT email, name, domain, pronoun, area FROM lead WHERE campaign_id = ?"
 
     cursor.execute(query, (campaign_id,))
     rows = cursor.fetchall()

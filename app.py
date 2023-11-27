@@ -6,6 +6,7 @@ from flask import (
     url_for,
     abort,
     Response,
+    flash,
 )
 from jinja2 import Template
 
@@ -18,6 +19,7 @@ from database import (
     db_create_campaign,
     db_get_campaign,
     db_get_campaigns,
+    db_delete_leads,
 )
 
 from schema import Link
@@ -25,6 +27,8 @@ from schema import Link
 from utils import generate_csv
 
 app = Flask(__name__, static_folder="content")
+
+app.secret_key = "1234"
 
 # TODO Deleting a link should also delete associated content
 # TODO Done write "None" in the field, just let them be empty, and make sure to validate its not empty when being submitted
@@ -193,6 +197,27 @@ def download_csv(campaign_id):
         mimetype="text/csv",
         headers={"Content-disposition": "attachment; filename=export.csv"},
     )
+
+
+@app.route("/delete-leads/<campaign_id>", methods=["POST"])
+def delete_leads(campaign_id):
+    campaign = db_get_campaign(campaign_id=campaign_id)
+
+    if not campaign:
+        abort(404)
+
+    campaign_name = campaign[1]
+
+    if request.method == "POST":
+        delete = request.form.get("delete")
+
+        if delete == "delete":
+            db_delete_leads(campaign_id=campaign_id)
+            flash("Leads deleted successfullu", "success")
+        else:
+            flash('You need to write "delete"', "danger")
+
+        return redirect(url_for("campaign", campaign_name=campaign_name))
 
 
 if __name__ == "__main__":

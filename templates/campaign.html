@@ -7,6 +7,10 @@
         <form action="/download-csv/{{campaign_id}}" method="get">
             <button class="btn btn-primary" type="submit">Download CSV</button>
         </form>
+        <form action="/delete-leads/{{campaign_id}}" method="post">
+            <input type="text" placeholder="Type 'delete' to confirm" class="form-control" name="delete" id="delete">
+            <button class="btn btn-danger" type="submit">Delete Leads</button>
+        </form>
         {% include 'partials/form.html' %}
     </div>
 </div>
