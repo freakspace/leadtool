@@ -290,6 +290,7 @@ def db_get_links_for_parsing(conn=None, cursor=None):
     return rows
 
 
+# TODO Change name?
 @connection
 def db_get_lead(conn=None, cursor=None) -> Optional[Link]:
     # Query to select links that are parsed, have an email, and are not present in the 'sent' table
@@ -322,6 +323,14 @@ def db_get_lead(conn=None, cursor=None) -> Optional[Link]:
 
 
 @connection
+def db_get_one_lead(lead_id: str, conn=None, cursor=None):
+    query = "SELECT * FROM lead where id = ?"
+    cursor.execute(query, (lead_id,))
+    row = cursor.fetchone()
+    return row
+
+
+@connection
 def db_delete_leads(campaign_id, conn=None, cursor=None):
     query = "DELETE from lead where campaign_id = ?"
     cursor.execute(query, (campaign_id,))
@@ -329,12 +338,28 @@ def db_delete_leads(campaign_id, conn=None, cursor=None):
 
 @connection
 def db_get_leads(campaign_id, conn=None, cursor=None):
-    query = "SELECT email, name, domain, pronoun, area FROM lead WHERE campaign_id = ?"
+    query = (
+        "SELECT id, email, name, domain, pronoun, area FROM lead WHERE campaign_id = ?"
+    )
 
     cursor.execute(query, (campaign_id,))
     rows = cursor.fetchall()
 
     return rows
+
+
+@connection
+def db_get_lead_count_from_campaign(campaign_id, conn=None, cursor=None):
+    query = "SELECT COUNT(*) FROM lead WHERE campaign_id = ?"
+
+    cursor.execute(query, (campaign_id,))
+
+    # Fetch the result
+    result = cursor.fetchone()
+    if result:
+        return result[0]  # This will return the count
+    else:
+        return 0
 
 
 @connection
@@ -430,6 +455,54 @@ def db_update_link_record(
     # Add the WHERE clause to specify which record to update
     sql += " WHERE id = ?"
     params.append(link_id)
+    data = tuple(params)
+    # Execute the SQL command
+    cursor.execute(sql, data)
+    conn.commit()
+
+
+@connection
+def db_update_lead(
+    id,
+    email=None,
+    name=None,
+    domain=None,
+    pronoun=None,
+    campaign_id=None,
+    area=None,
+    conn=None,
+    cursor=None,
+):
+    # Start building the SQL update statement
+    sql = "UPDATE lead SET "
+    params = []
+
+    # Add fields to update, if provided
+    if email is not None:
+        sql += "email = ?, "
+        params.append(email)
+    if name is not None:
+        sql += "name = ?, "
+        params.append(name)
+    if domain is not None:
+        sql += "domain = ?, "
+        params.append(domain)
+    if pronoun is not None:
+        sql += "pronoun = ?, "
+        params.append(pronoun)
+    if campaign_id is not None:
+        sql += "campaign_id = ?, "
+        params.append(campaign_id)
+    if area is not None:
+        sql += "area = ?, "
+        params.append(area)
+
+    # Remove trailing comma and space
+    sql = sql.rstrip(", ")
+
+    # Add the WHERE clause to specify which record to update
+    sql += " WHERE id = ?"
+    params.append(id)
     data = tuple(params)
     # Execute the SQL command
     cursor.execute(sql, data)

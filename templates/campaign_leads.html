@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container-fluid border rounded-3 p-4 m-4 bg-light mt-5">
+    <h2>Leads</h2>
+        <div class="row mb-2 font-weight-bold">
+            <div class="col">Name</div>
+            <div class="col">Email</div>
+            <div class="col">Domain</div>
+            <div class="col">Pronoun</div>
+            <div class="col">Area</div>
+            <div class="col">Action</div>
+        </div>
+        {% for lead in leads %}
+            {% include 'partials/lead_form.html' %}
+        {% endfor %}
+</div>
+{% endblock body %}

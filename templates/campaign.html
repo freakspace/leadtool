@@ -4,13 +4,17 @@
     <div class="row">
         <a class="" href="/">Go Back</a>
         <h1 class="fw-bolder">{{campaign|capitalize}}</h1>
-        <form action="/download-csv/{{campaign_id}}" method="get">
-            <button class="btn btn-primary" type="submit">Download CSV</button>
-        </form>
-        <form action="/delete-leads/{{campaign_id}}" method="post">
-            <input type="text" placeholder="Type 'delete' to confirm" class="form-control" name="delete" id="delete">
-            <button class="btn btn-danger" type="submit">Delete Leads</button>
-        </form>
+        <div class="d-flex">
+            <form action="/download-csv/{{campaign_id}}" method="get" class="me-3">
+                <button class="btn btn-primary" type="submit">Download CSV</button>
+            </form>
+            <form action="/delete-leads/{{campaign_id}}" method="post">
+                <div class="input-group">
+                    <button class="btn btn-danger col" type="submit">Delete Leads</button>
+                    <input type="text" placeholder="Type 'delete'" class="form-control" name="delete" id="delete">
+                </div>
+            </form>
+        </div>
         {% include 'partials/form.html' %}
     </div>
 </div>

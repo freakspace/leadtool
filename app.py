@@ -20,6 +20,9 @@ from database import (
     db_get_campaign,
     db_get_campaigns,
     db_delete_leads,
+    db_get_lead_count_from_campaign,
+    db_get_one_lead,
+    db_update_lead,
 )
 
 from schema import Link
@@ -35,6 +38,9 @@ app.secret_key = "1234"
 # TODO In form show lead count + total link count
 # TODO Mulighed for at tilføje lead til en anden liste
 # TODO Would be nice with stats about links: Remaining links, ready links etc.
+# TODO Normalize data (E.g. uppercase)
+# TODO List of all leads with options to edit each field
+# TODO Have AI classify the design from 1 to 10
 
 
 def get_lead():
@@ -128,6 +134,7 @@ def get_campaign_context(campaign):
     ]
 
     context["campaign"] = campaign_name
+    context["campaign_count"] = db_get_lead_count_from_campaign(campaign_id=campaign_id)
     context["campaign_id"] = campaign_id
     context["campaigns"] = campaigns
 
@@ -185,6 +192,72 @@ def campaign(campaign_name):
             return render_template("partials/form.html")
 
     return render_template("campaign.html", **context)
+
+
+@app.route("/leads/<campaign_name>", methods=["GET", "POST"])
+def leads(campaign_name):
+    campaign = db_get_campaign(campaign_name=campaign_name)
+
+    campaign_id = campaign[0]
+
+    if not campaign:
+        abort(404)
+
+    leads_data = db_get_leads(campaign_id=campaign_id)
+
+    if not leads_data:
+        return render_template("no_leads.html")
+
+    # Convert each lead tuple to a dictionary
+    leads = []
+    for lead in leads_data:
+        lead_dict = {
+            "id": lead[0],
+            "email": lead[1],
+            "name": lead[2],
+            "domain": lead[3],
+            "pronoun": lead[4],
+            "area": lead[5],
+        }
+        leads.append(lead_dict)
+
+    context = {"leads": leads, "campaign": campaign}
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        id = request.form.get("id")
+        email = request.form.get("email")
+        name = request.form.get("name")
+        domain = request.form.get("domain")
+        pronoun = request.form.get("pronoun")
+        area = request.form.get("area")
+        campaign_id = request.form.get("campaign_id")
+
+        if action == "update":
+            db_update_lead(
+                id=id,
+                email=email,
+                name=name,
+                domain=domain,
+                pronoun=pronoun,
+                area=area,
+                campaign_id=campaign_id,
+            )
+
+        updated_lead_data = db_get_one_lead(lead_id=id)
+
+        updated_lead = {
+            "id": updated_lead_data[0],
+            "email": updated_lead_data[1],
+            "name": updated_lead_data[2],
+            "domain": updated_lead_data[3],
+            "pronoun": updated_lead_data[4],
+            "area": updated_lead_data[5],
+        }
+
+        return render_template("partials/leads_form.html", **updated_lead)
+
+    return render_template("campaign_leads.html", **context)
 
 
 @app.route("/download-csv/<campaign_id>")
