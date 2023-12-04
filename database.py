@@ -426,6 +426,8 @@ def db_update_link_record(
         sql += "content_file = ?, "
         params.append(new_content_file)
     if new_email is not None:
+        if isinstance(new_email, list):
+            new_email = ",".join(new_email)
         sql += "email = ?, "
         params.append(new_email)
     if new_contact_name is not None:
@@ -437,9 +439,13 @@ def db_update_link_record(
         sql += "industry = ?, "
         params.append(new_industry)
     if new_city is not None:
+        if isinstance(new_city, list):
+            new_city = ",".join(new_city)
         sql += "city = ?, "
         params.append(new_city)
     if new_area is not None:
+        if isinstance(new_area, list):
+            new_area = ",".join(new_area)
         sql += "area = ?, "
         params.append(new_area)
     if new_parsed is not None:
@@ -455,6 +461,7 @@ def db_update_link_record(
     # Add the WHERE clause to specify which record to update
     sql += " WHERE id = ?"
     params.append(link_id)
+    print(params)
     data = tuple(params)
     # Execute the SQL command
     cursor.execute(sql, data)

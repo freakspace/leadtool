@@ -5,7 +5,7 @@ import asyncio
 from driver import get_content_from_url
 
 from database import tables, check_table_exists, db_get_links
-from sheets import parse_sheet_save_url
+from sheets import parse_sheet_save_url, add_sent
 from ai_parser import async_ai_parser
 
 # Configure logging
@@ -36,8 +36,8 @@ async def main(config):
         )
 
         action = input()
-
-        if action == "a" or action == "b" or action == "c" or action == "x":
+        actions = ["a", "b", "c", "d", "x"]
+        if action in actions:
             break
 
         print("We didn't quite catch that.. Try again.")
@@ -58,6 +58,9 @@ async def main(config):
         await async_ai_parser(
             outfolder=config["out_files_folder"], keys=config["aiparser"]["keys"]
         )
+
+    if action == "d":
+        add_sent(spread_sheet_id=config["google_sheets"]["sheet_id"], sheet_name="sent")
 
     if action == "x":
         pass

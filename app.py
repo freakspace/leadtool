@@ -41,6 +41,9 @@ app.secret_key = "1234"
 # TODO Normalize data (E.g. uppercase)
 # TODO List of all leads with options to edit each field
 # TODO Have AI classify the design from 1 to 10
+# TODO When getting links from google sheets, skip whichever link is in sent table
+# TODO When feeds is getting parsed, check / skip for sent
+# TODO Before exporting a list, check for sent
 
 
 def get_lead():
@@ -160,7 +163,7 @@ def campaign(campaign_name):
         id = request.form.get("id")
         email = request.form.get("email")
         name = request.form.get("name")
-        link = request.form.get("link")
+        domain = request.form.get("link")
         pronoun = request.form.get("pronoun")
         area = request.form.get("area")
         selected_campaign_id = request.form.get("campaign")
@@ -175,12 +178,13 @@ def campaign(campaign_name):
             db_create_lead(
                 email=email,
                 name=name,
-                domain=link,
+                domain=domain,
                 pronoun=pronoun,
                 campaign_id=campaign_id,
                 area=area,
             )
 
+            db_create_sent(domain=domain)
             db_delete_link(id=id)
 
         context = get_campaign_context(campaign=campaign)

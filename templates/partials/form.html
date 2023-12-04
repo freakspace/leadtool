@@ -75,11 +75,10 @@
                 </tr>
                 <tr>
                     <td>Area</td>
-                    <td>{{ area }}</td>
+                    <td class="text-truncate" style="max-width: 150px;">{{ area }}</td>
                 </tr>
                 <tr>
-                    <td>Screenshot</td>
-                    <td><img src="{{ url_for('static', filename=link + '.png') }}" class="img-fluid rounded"></td>
+                    <td colspan="2"><img src="{{ url_for('static', filename=link + '.png') }}" class="img-fluid rounded"></td>
                 </tr>
             </tbody>
         </table>

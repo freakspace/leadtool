@@ -2,7 +2,7 @@ import requests
 import csv
 from io import StringIO
 
-from database import db_create_link, db_get_sent
+from database import db_create_link, db_get_sent, db_create_sent
 from utils import extract_domain
 
 
@@ -32,3 +32,27 @@ def parse_sheet_save_url(spread_sheet_id: str, sheet_names: list):
             # Check if email has already been sent to domain
             if not db_get_sent(domain=link):
                 db_create_link(link=link)
+
+
+def add_sent(spread_sheet_id: str, sheet_name: str):
+    url = (
+        "https://docs.google.com/spreadsheets/d/"
+        + spread_sheet_id
+        + "/gviz/tq?tqx=out:csv&sheet="
+        + sheet_name
+    )
+
+    response = requests.get(url)
+
+    data = response.content.decode("utf-8")
+
+    f = StringIO(data)
+
+    reader = csv.reader(f)
+
+    for row in reader:
+        domain = extract_domain(row[0])
+
+        # Check if email has already been sent to domain
+        if not db_get_sent(domain=domain):
+            db_create_sent(domain=domain)
