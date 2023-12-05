@@ -1,21 +1,26 @@
-<form method="POST" hx-post="." class="row mb-3" hx-target="#lead-{{ lead.id }}" hx-swap="outerHTML">
-    <input type="hidden" name="id" value="{{ lead.id }}">
-    <div class="col">
-        <input type="text" class="form-control" name="name" value="{{ lead.name }}" required>
-    </div>
-    <div class="col">
-        <input type="email" class="form-control" name="email" value="{{ lead.email }}" required>
-    </div>
-    <div class="col">
-        <input type="text" class="form-control" name="domain" value="{{ lead.domain }}" required>
-    </div>
-    <div class="col">
-        <input type="text" class="form-control" name="pronoun" value="{{ lead.pronoun }}">
-    </div>
-    <div class="col">
-        <input type="text" class="form-control" name="area" value="{{ lead.area }}">
-    </div>
-    <div class="col">
-        <button type="submit" class="btn btn-primary">Update</button>
-    </div>
-</form>
+<div class="" id="lead-{{lead.id}}">
+    <form method="POST" hx-post="{{ url_for('leads', campaign_id=campaign_id) }}" class="row mb-3" hx-target="#lead-{{ lead.id }}">
+        <input type="hidden" name="lead_id" value="{{ lead.id }}">
+        <div class="col">
+            <input type="text" class="form-control" name="name" value="{{ lead.name }}" required>
+        </div>
+        <div class="col">
+            <input type="email" class="form-control" name="email" value="{{ lead.email }}" required>
+        </div>
+        <div class="col">
+            <input type="text" class="form-control" name="domain" value="{{ lead.domain }}" required>
+        </div>
+        <div class="col">
+            <input type="text" class="form-control" name="pronoun" value="{{ lead.pronoun }}">
+        </div>
+        <div class="col">
+            <input type="text" class="form-control" name="area" value="{{ lead.area }}">
+        </div>
+        <div class="col">
+            <input type="text" class="form-control" name="campaign_id" value="{{ campaign_id }}">
+        </div>
+        <div class="col">
+            <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+    </form>
+</div>

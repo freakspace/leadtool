@@ -76,7 +76,9 @@ def home():
 
     # Add code to retrieve existing campaigns from the database
     existing_campaigns = db_get_campaigns()
-    campaigns = [campaign[1] for campaign in existing_campaigns]
+    campaigns = [
+        {"id": campaign[0], "name": campaign[1]} for campaign in existing_campaigns
+    ]
     return render_template("campaigns.html", campaigns=campaigns)
 
 
@@ -148,10 +150,10 @@ def get_campaign_context(campaign):
 def campaign(campaign_name):
     campaign = db_get_campaign(campaign_name=campaign_name)
 
-    campaign_id = campaign[0]
-
     if not campaign:
         abort(404)
+
+    campaign_id = campaign[0]
 
     context = get_campaign_context(campaign=campaign)
 
@@ -198,11 +200,9 @@ def campaign(campaign_name):
     return render_template("campaign.html", **context)
 
 
-@app.route("/leads/<campaign_name>", methods=["GET", "POST"])
-def leads(campaign_name):
-    campaign = db_get_campaign(campaign_name=campaign_name)
-
-    campaign_id = campaign[0]
+@app.route("/leads/<campaign_id>", methods=["GET", "POST"])
+def leads(campaign_id):
+    campaign = db_get_campaign(campaign_id=campaign_id)
 
     if not campaign:
         abort(404)
@@ -225,30 +225,28 @@ def leads(campaign_name):
         }
         leads.append(lead_dict)
 
-    context = {"leads": leads, "campaign": campaign}
+    context = {"leads": leads, "campaign_id": campaign_id}
 
     if request.method == "POST":
-        action = request.form.get("action")
-        id = request.form.get("id")
+        lead_id = request.form.get("lead_id")
         email = request.form.get("email")
         name = request.form.get("name")
         domain = request.form.get("domain")
         pronoun = request.form.get("pronoun")
+        updated_campaign_id = request.form.get("campaign_id")
         area = request.form.get("area")
-        campaign_id = request.form.get("campaign_id")
+        print(f"Updating campaign id: {updated_campaign_id}")
+        db_update_lead(
+            id=lead_id,
+            email=email,
+            name=name,
+            domain=domain,
+            pronoun=pronoun,
+            campaign_id=updated_campaign_id,
+            area=area,
+        )
 
-        if action == "update":
-            db_update_lead(
-                id=id,
-                email=email,
-                name=name,
-                domain=domain,
-                pronoun=pronoun,
-                area=area,
-                campaign_id=campaign_id,
-            )
-
-        updated_lead_data = db_get_one_lead(lead_id=id)
+        updated_lead_data = db_get_one_lead(lead_id=lead_id)
 
         updated_lead = {
             "id": updated_lead_data[0],
@@ -256,10 +254,13 @@ def leads(campaign_name):
             "name": updated_lead_data[2],
             "domain": updated_lead_data[3],
             "pronoun": updated_lead_data[4],
-            "area": updated_lead_data[5],
+            # "campaign_id": updated_lead_data[5],
+            "area": updated_lead_data[6],
         }
 
-        return render_template("partials/leads_form.html", **updated_lead)
+        context = {"lead": updated_lead, "campaign_id": campaign_id}
+
+        return render_template("partials/lead_form.html", **context)
 
     return render_template("campaign_leads.html", **context)
 

@@ -19,9 +19,9 @@
                     <div class="col-md-4 col-sm-6 mb-3">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title">{{ campaign }}</h5>
-                                <a href="{{ url_for('campaign', campaign_name=campaign) }}" class="btn btn-primary">Add leads</a>
-                                <a href="{{ url_for('leads', campaign_name=campaign) }}" class="btn btn-secondary">View leads</a>
+                                <h5 class="card-title">{{ campaign.name }}</h5>
+                                <a href="{{ url_for('campaign', campaign_name=campaign.name) }}" class="btn btn-primary">Add leads</a>
+                                <a href="{{ url_for('leads', campaign_id=campaign.id) }}" class="btn btn-secondary">View leads</a>
                             </div>
                         </div>
                     </div>
