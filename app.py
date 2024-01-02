@@ -23,27 +23,41 @@ from database import (
     db_get_lead_count_from_campaign,
     db_get_one_lead,
     db_update_lead,
+    db_get_lead_count_remainder,
+    db_get_lead_count,
+    db_get_unparsed_links,
 )
 
 from schema import Link
 
 from utils import generate_csv
 
+from routes import routes_blueprint
+
 app = Flask(__name__, static_folder="content")
+
+app.register_blueprint(routes_blueprint, url_prefix="/api")
 
 app.secret_key = "1234"
 
 # TODO Deleting a link should also delete associated content
 # TODO Done write "None" in the field, just let them be empty, and make sure to validate its not empty when being submitted
 # TODO In form show lead count + total link count
-# TODO Mulighed for at tilføje lead til en anden liste
-# TODO Would be nice with stats about links: Remaining links, ready links etc.
-# TODO Normalize data (E.g. uppercase)
 # TODO List of all leads with options to edit each field
 # TODO Have AI classify the design from 1 to 10
 # TODO When getting links from google sheets, skip whichever link is in sent table
 # TODO When feeds is getting parsed, check / skip for sent
 # TODO Before exporting a list, check for sent
+# TODO Add a delete button to lead list
+# TODO Remove aps, /v from name
+# TODO Normalize emails
+# TODO Change pronoun to "du" if its a human name
+# TODO Dashboard to see: Total links, Links that hasnt been parsed for content, Total leads, leads remaining for QA
+# TODO Clean up lead vs. link
+# TODO Create API endpoints, make online version source of truth
+# TODO CLI should call API endpoints
+
+# TODO API endpoints: parse_sheet_save_url + get_content_from_url
 
 
 def get_lead():
@@ -79,7 +93,19 @@ def home():
     campaigns = [
         {"id": campaign[0], "name": campaign[1]} for campaign in existing_campaigns
     ]
-    return render_template("campaigns.html", campaigns=campaigns)
+
+    total_links = db_get_unparsed_links()
+    total_leads = db_get_lead_count()
+    remaining_leads = db_get_lead_count_remainder()
+
+    context = {
+        "campaigns": campaigns,
+        "total_unparsed_links": total_links,
+        "remaining_leads": remaining_leads,
+        "total_leads": total_leads,
+    }
+
+    return render_template("campaigns.html", **context)
 
 
 @app.route("/email-form", methods=["GET", "POST"])
@@ -140,6 +166,7 @@ def get_campaign_context(campaign):
 
     context["campaign"] = campaign_name
     context["campaign_count"] = db_get_lead_count_from_campaign(campaign_id=campaign_id)
+    context["remaining_leads"] = db_get_lead_count_remainder()
     context["campaign_id"] = campaign_id
     context["campaigns"] = campaigns
 

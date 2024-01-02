@@ -55,6 +55,7 @@ CREATE TABLE link(
                 content_file TEXT,
                 email TEXT,
                 contact_name TEXT,
+                pronoun TEXT,
                 industry TEXT,
                 city TEXT,
                 area TEXT,
@@ -141,7 +142,6 @@ def db_create_sent(domain: str, email: str = None, conn=None, cursor=None):
         cursor.execute(query, data)
         conn.commit()  # Commit the transaction
     except Exception as e:
-        print(domain)
         print(f"An error occurred: {e}")
 
 
@@ -323,6 +323,29 @@ def db_get_lead(conn=None, cursor=None) -> Optional[Link]:
 
 
 @connection
+def db_get_lead_count_remainder(conn=None, cursor=None) -> Optional[int]:
+    # Query to select the count of links that are parsed, have an email, and are not present in the 'sent' table
+    query = """
+    SELECT COUNT(*) FROM link l
+    LEFT JOIN sent s ON l.link = s.domain
+    WHERE l.parsed = 1 AND l.email != 'None' AND s.id IS NULL
+    """
+
+    cursor.execute(query)
+    result = cursor.fetchone()
+    return result[0] if result else None
+
+
+@connection
+def db_get_unparsed_links(conn=None, cursor=None) -> Optional[int]:
+    # Query to select the count of links that are unparsed
+    query = "SELECT COUNT(*) FROM link WHERE parsed = 0"
+    cursor.execute(query)
+    result = cursor.fetchone()
+    return result[0] if result else None
+
+
+@connection
 def db_get_one_lead(lead_id: str, conn=None, cursor=None):
     query = "SELECT * FROM lead where id = ?"
     cursor.execute(query, (lead_id,))
@@ -358,6 +381,21 @@ def db_get_lead_count_from_campaign(campaign_id, conn=None, cursor=None):
     result = cursor.fetchone()
     if result:
         return result[0]  # This will return the count
+    else:
+        return 0
+
+
+@connection
+def db_get_lead_count(conn=None, cursor=None):
+    query = "SELECT COUNT(*) FROM lead"
+
+    cursor.execute(
+        query,
+    )
+
+    result = cursor.fetchone()
+    if result:
+        return result[0]
     else:
         return 0
 
@@ -406,6 +444,7 @@ def db_update_link_record(
     new_content_file=None,
     new_email=None,
     new_contact_name=None,
+    new_pronoun=None,
     new_industry=None,
     new_city=None,
     new_area=None,
@@ -433,6 +472,9 @@ def db_update_link_record(
     if new_contact_name is not None:
         sql += "contact_name = ?, "
         params.append(new_contact_name)
+    if new_pronoun is not None:
+        sql += "pronoun = ?, "
+        params.append(new_pronoun)
     if new_industry is not None:
         if isinstance(new_industry, list):
             new_industry = ",".join(new_industry)
@@ -461,7 +503,6 @@ def db_update_link_record(
     # Add the WHERE clause to specify which record to update
     sql += " WHERE id = ?"
     params.append(link_id)
-    print(params)
     data = tuple(params)
     # Execute the SQL command
     cursor.execute(sql, data)

@@ -1,11 +1,39 @@
 {% extends 'base.html' %}
 {% block body %}
+<div class="container border rounded-3 p-4 bg-light mb-5">
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Unparsed links</h5>
+                  <p class="card-text">{{ total_unparsed_links }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Remaining leads</h5>
+                    <p class="card-text">{{ remaining_leads }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total leads</h5>
+                    <p class="card-text">{{ total_leads }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="container border rounded-3 p-4 bg-light mt-5">
     <div class="row">
         <div class="col-12">
             <form method="POST" class="form-inline">
                 <div class="mb-3">
-                    <label for="campaign_name" class="form-label">New Campaign</label>
+                    <h3 class="mb-3">New campaign</h3>
                     <input type="text" id="campaign_name" name="campaign_name" class="form-control" required>
                 </div>
                 <button type="submit" class="btn btn-primary">Create Campaign</button>
@@ -13,7 +41,7 @@
         </div>
         <hr class="mt-5 mb-4">
         <div class="col-12">
-            <h3>Existing Campaigns</h3>
+            <h3 class="mb-3">Existing Campaigns</h3>
             <div class="row">
                 {% for campaign in campaigns %}
                     <div class="col-md-4 col-sm-6 mb-3">

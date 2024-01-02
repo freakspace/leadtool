@@ -6,8 +6,10 @@
     </div>
     <form method="post" hx-post="{{ url_for('campaign', campaign_name=campaign) }}" hx-target="#form-wrapper" class="col my-4">
 
-        <input type="text" class="form-control" name="id" id="id" value="{{ id }}" hidden>
+        <small class="text-danger mb-3">Sometimes there are a list of data e.g. "Benny", "Tommy", only chose ONE.</small>
 
+        <input type="text" class="form-control" name="id" id="id" value="{{ id }}" hidden>
+        
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <input type="text" class="form-control" name="email" id="email" value="{{ email }}">
@@ -16,6 +18,7 @@
         <div class="mb-3">
             <label for="name" class="form-label">Name</label>
             <input type="text" class="form-control" name="name" id="name" value="{{ name }}">
+            <small class="text-danger">1st priority person name 2nd priority business name</small>
         </div>
 
         <div class="mb-3">
@@ -25,12 +28,14 @@
 
         <div class="mb-3">
             <label for="pronoun" class="form-label">Pronoun</label>
-            <input type="text" class="form-control" name="pronoun" id="pronoun" value="i">
+            <input type="text" class="form-control" name="pronoun" id="pronoun" value="{% if pronoun %}{{pronoun}}{% else %}i{% endif %}">
+            <small class="text-danger">Business name = 'i' and person name = 'du'</small>
         </div>
 
         <div class="mb-3">
             <label for="area" class="form-label">Area</label>
             <input type="text" class="form-control" name="area" id="area" value="{{ city }}">
+            <small class="text-danger">Only 1 area</small>
         </div>
 
         <div class="mb-3">
@@ -83,6 +88,7 @@
             </tbody>
         </table>
         <p>Leads count this campaign: {{campaign_count}}</p>
+        <p>Remaining leads: {{remaining_leads}}</p>
     </div>
 </div>
 <!-- HTMX script to handle JSON response and display the error message if present -->

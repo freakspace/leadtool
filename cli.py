@@ -53,7 +53,6 @@ async def main(config):
         get_content_from_url(links=links, outfolder=config["out_files_folder"])
 
     if action == "c":
-        # ai_parser(outfolder=config["out_files_folder"], keys=config["aiparser"]["keys"])
         # Run the ai_parser coroutine
         await async_ai_parser(
             outfolder=config["out_files_folder"], keys=config["aiparser"]["keys"]

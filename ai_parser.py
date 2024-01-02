@@ -1,13 +1,13 @@
 import os
 import sys
 import json
-import threading
 import logging
 import asyncio
 
 from openai import AsyncOpenAI
 
-from database import db_get_links_for_parsing, db_update_link_record
+from database import db_get_links_for_parsing
+from services import update_link_record
 
 api_key = os.getenv("OPENAPI_KEY")
 
@@ -32,7 +32,7 @@ def get_user_message(content: str, keys: list, extra_instructions: str = None):
 
     {', '.join(str(key) for key in keys)}
 
-    If you are not sure, write None
+    If you are not sure, write None.
 
     CONTENT:
     {content}
@@ -40,6 +40,7 @@ def get_user_message(content: str, keys: list, extra_instructions: str = None):
     Remember to output as JSON and write the json key EXACTLY as written above {', '.join(str(key) for key in keys)}
 
     In terms of the 'contact_name' key, this can either be company name OR an actual name. Sometimes the name of the person is reflected by the email. for example john@example.com.
+    If you return an actual human name, return pronoun as 'du'. Otherwise return 'i'.
     """,
     }
     {extra_instructions}
@@ -112,75 +113,15 @@ async def async_ai_parser(outfolder: str, keys: list, attempts: int = 3):
         print(f"Updating {path} in database")
 
         if data:
-            db_update_link_record(
+            update_link_record(
                 link_id=id,
-                new_email=data.get("e-mail", ""),
-                new_contact_name=data.get("contact_name", ""),
-                new_industry=data.get("industry", ""),
-                new_city=data.get("city", ""),
-                new_area=data.get("area", ""),
-                new_parsed=1,
+                email=data.get("e-mail", "").lower(),
+                contact_name=data.get("contact_name", "").title(),
+                industry=data.get("industry", "").title(),
+                city=data.get("city", "").title(),
+                area=data.get("area", "").title(),
+                parsed=1,
             )
         else:
             logging.warning(f"No data for {path}")
-            db_update_link_record(link_id=id, new_parsed=1)
-
-
-""" def ai_parser(outfolder: str, keys: list, attempts: int = 3):
-    links = db_get_links_for_parsing()
-
-    for id, path in links:
-        file_path = f"{outfolder}/{path}.txt"
-        print(f"Opening {file_path}")
-        with open(file_path, "r", encoding="utf-8") as file:
-            content = file.read()
-
-        count = 0
-        data = {}
-        result = None
-
-        while not has_required_keys(json_obj=data, required_keys=keys) and count < attempts:
-            print(f"Parsing {path} [attempt {count+1}/{attempts}]")
-
-            extra_instructions = ""
-            if count > 0:
-                extra_instructions = f"REMEMBER to return json object with these key: {keys}"
-
-            count += 1
-
-            def call_complete_chat():
-                nonlocal result  # Use nonlocal to modify the outer scope variable
-                try:
-                    response = complete_chat(content, keys, extra_instructions)
-                    result = json.loads(response.choices[0].message.content)
-                except json.JSONDecodeError as e:
-                    logging.error(f"Error loading json for {path}: {e}")
-                    result = None
-
-            chat_thread = threading.Thread(target=call_complete_chat)
-            chat_thread.start()
-            chat_thread.join(timeout=20)
-
-            if chat_thread.is_alive():
-                logging.error(f"Timeout occurred for {path}")
-                chat_thread.join()
-                continue
-
-            if result:
-                data.update(result)
-
-        print(f"Updating {path} in database")
-
-        if data:
-            db_update_link_record(
-                link_id=id,
-                new_email=data.get("e-mail", ""),
-                new_contact_name=data.get("contact_name", ""),
-                new_industry=data.get("industry", ""),
-                new_city=data.get("city", ""),
-                new_area=data.get("area", ""),
-                new_parsed=1,
-            )
-        else:
-            logging.warning(f"No data for {path}")
-            db_update_link_record(link_id=id, new_parsed=1) """
+            update_link_record(link_id=id, new_parsed=1)

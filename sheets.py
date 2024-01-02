@@ -30,8 +30,8 @@ def parse_sheet_save_url(spread_sheet_id: str, sheet_names: list):
             link = extract_domain(row[0])
 
             # Check if email has already been sent to domain
-            if not db_get_sent(domain=link):
-                db_create_link(link=link)
+            if not db_get_sent(domain=link):  # TODO Create API endpoint
+                db_create_link(link=link)  # TODO Create API endpoint
 
 
 def add_sent(spread_sheet_id: str, sheet_name: str):
