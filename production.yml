@@ -10,6 +10,4 @@ services:
     volumes:
       - .:/usr/src/app
     env_file:
-      .envs/.local/.flask
-    labels:
-    - "com.example.description=My Flask App"
+      .envs/.production/.flask
