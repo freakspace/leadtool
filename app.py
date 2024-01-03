@@ -51,9 +51,6 @@ app.secret_key = "1234"
 # TODO Before exporting a list, check for sent
 # TODO Add a delete button to lead list
 # TODO Remove aps, /v from name
-# TODO Normalize emails
-# TODO Change pronoun to "du" if its a human name
-# TODO Dashboard to see: Total links, Links that hasnt been parsed for content, Total leads, leads remaining for QA
 # TODO Clean up lead vs. link vs. domain
 # TODO Add testing
 
