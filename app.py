@@ -7,6 +7,7 @@ from flask import (
     abort,
     Response,
     flash,
+    session,
 )
 from jinja2 import Template
 
@@ -27,6 +28,7 @@ from database import (
     db_get_lead_count,
     db_get_unparsed_links,
     db_get_unscraped_links,
+    db_verify_password,
 )
 
 from schema import Link
@@ -34,6 +36,8 @@ from schema import Link
 from utils import generate_csv
 
 from routes import routes_blueprint
+
+from decorators import login_required
 
 app = Flask(__name__, static_folder="content")
 
@@ -76,6 +80,7 @@ def get_lead():
 
 
 @app.route("/", methods=["GET", "POST"])
+@login_required
 def home():
     if request.method == "POST":
         campaign_name = request.form.get("campaign_name")
@@ -106,6 +111,7 @@ def home():
 
 
 @app.route("/email-form", methods=["GET", "POST"])
+@login_required
 def email_form():
     context = get_lead()
 
@@ -171,6 +177,7 @@ def get_campaign_context(campaign):
 
 
 @app.route("/<campaign_name>", methods=["GET", "POST"])
+@login_required
 def campaign(campaign_name):
     campaign = db_get_campaign(campaign_name=campaign_name)
 
@@ -225,6 +232,7 @@ def campaign(campaign_name):
 
 
 @app.route("/leads/<campaign_id>", methods=["GET", "POST"])
+@login_required
 def leads(campaign_id):
     campaign = db_get_campaign(campaign_id=campaign_id)
 
@@ -320,6 +328,28 @@ def delete_leads(campaign_id):
             flash('You need to write "delete"', "danger")
 
         return redirect(url_for("campaign", campaign_name=campaign_name))
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        if db_verify_password(username, password):
+            session["username"] = username
+            return redirect(url_for("home"))
+        return "Invalid username or password"
+
+    return render_template("login.html")
+
+
+# Logout page
+@app.route("/logout")
+@login_required
+def logout():
+    session.pop("username", None)
+    return redirect(url_for("login"))
 
 
 if __name__ == "__main__":

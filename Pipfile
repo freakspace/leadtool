@@ -15,6 +15,7 @@ flask = "*"
 pydantic = "*"
 pytz = "*"
 gunicorn = "*"
+bcrypt = "*"
 
 [dev-packages]
 

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="row justify-content-center align-items-center">
+    <div class="col-4 bg-light rounded-3 p-4">
+        <form method="post" class="form-signin">
+            <h1 class="mb-3 fw-bolder text-center">Sign in</h1>
+            <label for="inputUsername" class="sr-only">Username</label>
+            <input type="text" id="inputUsername" name="username" class="form-control mb-3" placeholder="Username" required autofocus>
+            <label for="inputPassword" class="sr-only">Password</label>
+            <input type="password" id="inputPassword" name="password" class="form-control mb-3" placeholder="Password" required>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        </form>
+    </div>
+</div>
+{% endblock body %}

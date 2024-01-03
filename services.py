@@ -77,3 +77,7 @@ def get_links_for_parsing():
         return data["links"]
     else:
         raise Exception("Bad request")
+
+
+def create_user():
+    pass

@@ -6,6 +6,7 @@ from database import (
     db_create_link,
     db_get_links,
     db_get_unparsed_links,
+    db_create_user,
 )
 
 routes_blueprint = Blueprint("routes_blueprint", __name__)
@@ -80,3 +81,16 @@ def get_links():
 def get_links_for_pasing():
     links = db_get_unparsed_links()
     return jsonify({"links": links}), 200
+
+
+@routes_blueprint.route("/create_user", methods=["POST"])
+def create_user():
+    data = request.json
+
+    username = data.get("username")
+    password = data.get("password")
+    superuser = data.get("superuser", 0)
+
+    db_create_user(username=username, password=password, superuser=superuser)
+
+    return jsonify({"message": "User created successfully"}), 200

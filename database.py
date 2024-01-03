@@ -4,6 +4,8 @@ import functools
 import logging
 from typing import Optional
 
+import bcrypt
+
 from dotenv import load_dotenv
 
 from schema import Link
@@ -46,10 +48,25 @@ def connection(func):
 
 
 @connection
+def create_user_table(conn=None, cursor=None):
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS user (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            superuser INTEGER DEFAULT 0,
+            password_hash TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+
+
+@connection
 def create_link_table(conn=None, cursor=None):
     cursor.execute(
         """
-CREATE TABLE link(
+CREATE TABLE IF NOT EXISTS link(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 link TEXT UNIQUE, 
                 content_file TEXT,
@@ -106,6 +123,24 @@ def create_campaign_table(conn=None, cursor=None):
             created_at TEXT DEFAULT CURRENT_TIMESTAMP)
         """
     )
+
+
+@connection
+def db_create_user(username, password, superuser, conn=None, cursor=None):
+    # Hash the password
+    password_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+
+    try:
+        # Insert the new user into the users table
+        cursor.execute(
+            "INSERT INTO user (username, password_hash, superuser) VALUES (?, ?, ?)",
+            (username, password_hash, superuser),
+        )
+        print(f"User {username} created successfully.")
+    except sqlite3.IntegrityError:
+        print("Error: That username is already taken.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 @connection
@@ -561,6 +596,22 @@ def db_update_lead(
 
 
 @connection
+def db_verify_password(username, provided_password, conn=None, cursor=None):
+    # Fetch the user by username
+    cursor.execute("SELECT password_hash FROM user WHERE username = ?", (username,))
+    result = cursor.fetchone()
+    if result is None:
+        return False
+
+    stored_hash = result[0]
+
+    if isinstance(stored_hash, str):
+        stored_hash = stored_hash.encode("utf-8")
+
+    return bcrypt.checkpw(provided_password.encode("utf-8"), stored_hash)
+
+
+@connection
 def check_table_exists(table_name, conn=None, cursor=None):
     cursor.execute(
         f"SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{table_name}'"
@@ -578,4 +629,5 @@ tables = {
     "lead": create_lead_table,
     "campaign": create_campaign_table,
     "sent": create_sent_table,
+    "user": create_user_table,
 }
