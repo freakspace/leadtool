@@ -4,9 +4,10 @@ import asyncio
 
 from driver import get_content_from_url
 
-from database import tables, check_table_exists, db_get_links
+from database import tables, check_table_exists
 from sheets import parse_sheet_save_url, add_sent
 from ai_parser import async_ai_parser
+from services import get_links
 
 # Configure logging
 logging.basicConfig(
@@ -28,9 +29,9 @@ async def main(config):
     while True:
         print(
             """
-    Type a to parse google sheet
-    Type b to parse links (Will open Chrome)
-    Type c to extract info from content
+    Type a to get links from google sheet
+    Type b to scrape content from links (Will open Chrome)
+    Type c to extract info from content using ChatGPT
     Type x to exit
     """
         )
@@ -49,7 +50,7 @@ async def main(config):
         )
 
     if action == "b":
-        links = db_get_links()
+        links = get_links()
         get_content_from_url(links=links, outfolder=config["out_files_folder"])
 
     if action == "c":

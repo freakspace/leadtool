@@ -26,6 +26,7 @@ from database import (
     db_get_lead_count_remainder,
     db_get_lead_count,
     db_get_unparsed_links,
+    db_get_unscraped_links,
 )
 
 from schema import Link
@@ -53,11 +54,8 @@ app.secret_key = "1234"
 # TODO Normalize emails
 # TODO Change pronoun to "du" if its a human name
 # TODO Dashboard to see: Total links, Links that hasnt been parsed for content, Total leads, leads remaining for QA
-# TODO Clean up lead vs. link
-# TODO Create API endpoints, make online version source of truth
-# TODO CLI should call API endpoints
-
-# TODO API endpoints: parse_sheet_save_url + get_content_from_url
+# TODO Clean up lead vs. link vs. domain
+# TODO Add testing
 
 
 def get_lead():
@@ -94,13 +92,15 @@ def home():
         {"id": campaign[0], "name": campaign[1]} for campaign in existing_campaigns
     ]
 
-    total_links = db_get_unparsed_links()
+    total_unscraped_links = db_get_unscraped_links()
+    total_unparsed_links = db_get_unparsed_links()
     total_leads = db_get_lead_count()
     remaining_leads = db_get_lead_count_remainder()
 
     context = {
         "campaigns": campaigns,
-        "total_unparsed_links": total_links,
+        "total_unscraped_links": total_unscraped_links,
+        "total_unparsed_links": len(total_unparsed_links),
         "remaining_leads": remaining_leads,
         "total_leads": total_leads,
     }

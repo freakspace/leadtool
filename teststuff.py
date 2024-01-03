@@ -1,5 +1,3 @@
-from services import check_sent
+from services import update_link_record
 
-result = check_sent(domain="cleanforce.dk")
-
-print(result)
+update_link_record(link_id=2972, industry="Cleaning")

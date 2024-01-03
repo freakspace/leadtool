@@ -279,17 +279,6 @@ def db_get_links(conn=None, cursor=None):
     return rows
 
 
-@connection
-def db_get_links_for_parsing(conn=None, cursor=None):
-    query = "SELECT id, content_file FROM link WHERE parsed = 0 AND content_file IS NOT NULL"
-
-    cursor.execute(query)
-
-    rows = cursor.fetchall()
-
-    return rows
-
-
 # TODO Change name?
 @connection
 def db_get_lead(conn=None, cursor=None) -> Optional[Link]:
@@ -337,12 +326,26 @@ def db_get_lead_count_remainder(conn=None, cursor=None) -> Optional[int]:
 
 
 @connection
-def db_get_unparsed_links(conn=None, cursor=None) -> Optional[int]:
-    # Query to select the count of links that are unparsed
-    query = "SELECT COUNT(*) FROM link WHERE parsed = 0"
+def db_get_unscraped_links(conn=None, cursor=None) -> Optional[int]:
+    # Query to select the count of links that havent been scraped for content
+    query = "SELECT COUNT(*) FROM link WHERE parsed = 0 AND content_file IS NULL"
     cursor.execute(query)
     result = cursor.fetchone()
+    print("KIG")
+    print(result[0])
     return result[0] if result else None
+
+
+@connection
+def db_get_unparsed_links(conn=None, cursor=None):
+    # Query all scraped links that haven't been parsed by AI yet
+    query = "SELECT id, content_file FROM link WHERE parsed = 0 AND content_file IS NOT NULL"
+
+    cursor.execute(query)
+
+    rows = cursor.fetchall()
+
+    return rows
 
 
 @connection
@@ -440,16 +443,16 @@ def db_get_sent(domain: str = None, email: str = None, conn=None, cursor=None):
 @connection
 def db_update_link_record(
     link_id,
-    new_link=None,
-    new_content_file=None,
-    new_email=None,
-    new_contact_name=None,
-    new_pronoun=None,
-    new_industry=None,
-    new_city=None,
-    new_area=None,
-    new_parsed=None,
-    new_contacted_at=None,
+    link=None,
+    content_file=None,
+    email=None,
+    contact_name=None,
+    pronoun=None,
+    industry=None,
+    city=None,
+    area=None,
+    parsed=None,
+    contacted_at=None,
     conn=None,
     cursor=None,
 ):
@@ -458,44 +461,44 @@ def db_update_link_record(
     params = []
 
     # Add fields to update, if provided
-    if new_link is not None:
+    if link is not None:
         sql += "link = ?, "
-        params.append(new_link)
-    if new_content_file is not None:
+        params.append(link)
+    if content_file is not None:
         sql += "content_file = ?, "
-        params.append(new_content_file)
-    if new_email is not None:
-        if isinstance(new_email, list):
-            new_email = ",".join(new_email)
+        params.append(content_file)
+    if email is not None:
+        if isinstance(email, list):
+            email = ",".join(email)
         sql += "email = ?, "
-        params.append(new_email)
-    if new_contact_name is not None:
+        params.append(email)
+    if contact_name is not None:
         sql += "contact_name = ?, "
-        params.append(new_contact_name)
-    if new_pronoun is not None:
+        params.append(contact_name)
+    if pronoun is not None:
         sql += "pronoun = ?, "
-        params.append(new_pronoun)
-    if new_industry is not None:
-        if isinstance(new_industry, list):
-            new_industry = ",".join(new_industry)
+        params.append(pronoun)
+    if industry is not None:
+        if isinstance(industry, list):
+            industry = ",".join(industry)
         sql += "industry = ?, "
-        params.append(new_industry)
-    if new_city is not None:
-        if isinstance(new_city, list):
-            new_city = ",".join(new_city)
+        params.append(industry)
+    if city is not None:
+        if isinstance(city, list):
+            city = ",".join(city)
         sql += "city = ?, "
-        params.append(new_city)
-    if new_area is not None:
-        if isinstance(new_area, list):
-            new_area = ",".join(new_area)
+        params.append(city)
+    if area is not None:
+        if isinstance(area, list):
+            area = ",".join(area)
         sql += "area = ?, "
-        params.append(new_area)
-    if new_parsed is not None:
+        params.append(area)
+    if parsed is not None:
         sql += "parsed = ?, "
-        params.append(new_parsed)
-    if new_contacted_at is not None:
+        params.append(parsed)
+    if contacted_at is not None:
         sql += "contacted_at = ?, "
-        params.append(new_contacted_at)
+        params.append(contacted_at)
 
     # Remove trailing comma and space
     sql = sql.rstrip(", ")

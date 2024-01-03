@@ -6,15 +6,14 @@ from selenium.common.exceptions import TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 
-from database import db_update_link_record
-
+from services import update_link_record
 
 # TODO Maybe crawl a couple of pages and get the info?
 
 
 def get_content_from_url(links: list, outfolder: str):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-    driver.set_page_load_timeout(10)  # Set a timeout of 10 seconds (adjust as needed)
+    driver.set_page_load_timeout(30)  # Set a timeout of 10 seconds (adjust as needed)
 
     for record in links:
         id, link = record
@@ -37,11 +36,9 @@ def get_content_from_url(links: list, outfolder: str):
                 out_file.write(text_content)
 
             driver.save_screenshot(screenshot_file_path)  # Save the screenshot
-
-            db_update_link_record(
-                link_id=id, new_content_file=link
-            )  # TODO Creaet API endpoint
-
+            print(f"Updating link: {link}")
+            update_link_record(link_id=id, content_file=link)
+        # TODO Update link record with error message so it can be skipped next time
         except Exception as e:
             logging.error(f"Error processing link {link}: {e}")
 

@@ -6,8 +6,7 @@ import asyncio
 
 from openai import AsyncOpenAI
 
-from database import db_get_links_for_parsing
-from services import update_link_record
+from services import update_link_record, get_links_for_parsing
 
 api_key = os.getenv("OPENAPI_KEY")
 
@@ -75,7 +74,7 @@ def has_required_keys(json_obj, required_keys):
 
 
 async def async_ai_parser(outfolder: str, keys: list, attempts: int = 3):
-    links = db_get_links_for_parsing()
+    links = get_links_for_parsing()
 
     for id, path in links:
         file_path = f"{outfolder}/{path}.txt"
@@ -115,11 +114,11 @@ async def async_ai_parser(outfolder: str, keys: list, attempts: int = 3):
         if data:
             update_link_record(
                 link_id=id,
-                email=data.get("e-mail", "").lower(),
-                contact_name=data.get("contact_name", "").title(),
-                industry=data.get("industry", "").title(),
-                city=data.get("city", "").title(),
-                area=data.get("area", "").title(),
+                email=data.get("e-mail", ""),
+                contact_name=data.get("contact_name", ""),
+                industry=data.get("industry", ""),
+                city=data.get("city", ""),
+                area=data.get("area", ""),
                 parsed=1,
             )
         else:
