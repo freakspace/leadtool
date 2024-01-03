@@ -10,7 +10,7 @@ from schema import Link
 
 load_dotenv()
 
-db_name = os.getenv("DB_NAME")
+db_name = os.getenv("DB_NAME", "db")
 
 # TODO Change link to domain
 

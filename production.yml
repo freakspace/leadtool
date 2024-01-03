@@ -11,3 +11,5 @@ services:
       - .:/usr/src/app
     env_file:
       .envs/.production/.flask
+    environment:
+      - ENVIRONMENT_TYPE=production

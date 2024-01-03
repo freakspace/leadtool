@@ -1,6 +1,5 @@
 .env
 .envs/
-db
 config.json
 app.log
 content/

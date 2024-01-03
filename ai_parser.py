@@ -8,7 +8,7 @@ from openai import AsyncOpenAI
 
 from services import update_link_record, get_links_for_parsing
 
-api_key = os.getenv("OPENAPI_KEY")
+api_key = os.getenv("OPENAPI_KEY", "")
 
 if not api_key:
     print("No api key found in environment")
