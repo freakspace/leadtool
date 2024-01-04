@@ -2,7 +2,7 @@ import logging
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 
@@ -22,6 +22,16 @@ def get_content_from_url(links: list, outfolder: str):
             driver.get("http://" + link)
         except TimeoutException:
             logging.error(f"Timeout error for link {link}")
+            continue
+        except WebDriverException as e:
+            if "ERR_NAME_NOT_RESOLVED" in str(e):
+                update_link_record(link_id=id, invalid=True)
+                logging.error(f"ERR_NAME_NOT_RESOLVED")
+            if "DNS_PROBE_FINISHED_NXDOMAIN" in str(e):
+                update_link_record(link_id=id, invalid=True)
+                logging.error(f"DNS_PROBE_FINISHED_NXDOMAIN")
+            else:
+                logging.error(f"Error: {e}")
             continue
         except Exception as e:
             logging.error(f"Error fetching link {link}: {e}")

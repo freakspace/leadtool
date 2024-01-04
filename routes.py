@@ -39,6 +39,7 @@ def update_link(link_id):
             if data.get("area") is not None
             else None,
             "parsed": data.get("parsed"),
+            "invalid": data.get("invalid"),
             "contacted_at": data.get("contacted_at"),
         }
 

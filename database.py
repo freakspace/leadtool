@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS link(
                 city TEXT,
                 area TEXT,
                 parsed INTEGER DEFAULT 0,
+                invalid INTEGER DEFAULT 0,
                 contacted_at TIMESTAMP,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP)
 """
@@ -363,7 +364,7 @@ def db_get_lead_count_remainder(conn=None, cursor=None) -> Optional[int]:
 @connection
 def db_get_unscraped_links(conn=None, cursor=None) -> Optional[int]:
     # Query to select the count of links that havent been scraped for content
-    query = "SELECT COUNT(*) FROM link WHERE parsed = 0 AND content_file IS NULL"
+    query = "SELECT COUNT(*) FROM link WHERE parsed = 0 AND invalid = 0 AND content_file IS NULL"
     cursor.execute(query)
     result = cursor.fetchone()
     print("KIG")
@@ -374,7 +375,7 @@ def db_get_unscraped_links(conn=None, cursor=None) -> Optional[int]:
 @connection
 def db_get_unparsed_links(conn=None, cursor=None):
     # Query all scraped links that haven't been parsed by AI yet
-    query = "SELECT id, content_file FROM link WHERE parsed = 0 AND content_file IS NOT NULL"
+    query = "SELECT id, content_file FROM link WHERE parsed = 0 AND invalid = 0 AND content_file IS NOT NULL"
 
     cursor.execute(query)
 
@@ -487,6 +488,7 @@ def db_update_link_record(
     city=None,
     area=None,
     parsed=None,
+    invalid=None,
     contacted_at=None,
     conn=None,
     cursor=None,
@@ -531,6 +533,9 @@ def db_update_link_record(
     if parsed is not None:
         sql += "parsed = ?, "
         params.append(parsed)
+    if invalid is not None:
+        sql += "invalid = ?, "
+        params.append(invalid)
     if contacted_at is not None:
         sql += "contacted_at = ?, "
         params.append(contacted_at)

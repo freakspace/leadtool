@@ -10,6 +10,7 @@ def update_link_record(
     city: str = None,
     area: str = None,
     parsed: int = 0,
+    invalid: int = 0,
 ):
     url = f"http://localhost:5000/api/update_link/{link_id}"
 
@@ -21,6 +22,7 @@ def update_link_record(
         "city": city,
         "area": area,
         "parsed": parsed,
+        "invalid": invalid,
     }
 
     response = requests.post(url, json=data)
