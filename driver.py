@@ -39,6 +39,9 @@ def get_content_from_url(links: list, outfolder: str):
             if "DNS_PROBE_FINISHED_NXDOMAIN" in str(e):
                 update_link_record(link_id=id, invalid=True)
                 logging.error(f"DNS_PROBE_FINISHED_NXDOMAIN")
+            if "dnsNotFound" in str(e):
+                update_link_record(link_id=id, invalid=True)
+                logging.error(f"DNS_PROBE_FINISHED_NXDOMAIN")
             else:
                 logging.error(f"Error: {e}")
             continue

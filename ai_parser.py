@@ -19,7 +19,7 @@ client = AsyncOpenAI(api_key=api_key)
 
 system_message = {
     "role": "system",
-    "content": "You are a helpful assistant designed to output JSON. You will be given a piece of content (from a website), and instructed by the user to extract information. Remember to return as JSON. Do not return any translations, only the data.",
+    "content": "You are a helpful assistant designed to output JSON. You will be given a piece of content (text from a website), and instructed by the user to extract certain information. Remember to return as JSON. Do not return any translations, only the raw data.",
 }
 
 
@@ -27,19 +27,30 @@ def get_user_message(content: str, keys: list, extra_instructions: str = None):
     user_message = {
         "role": "user",
         "content": f"""
-    Please extract the following information from the content. Remember to not translate the data, only return the data.:
+    Please extract the following information from the content. Remember to not translate the data, only return the raw data:
 
     {', '.join(str(key) for key in keys)}
 
-    If you are not sure, write None.
+    If you are not sure, write 'None'
 
     CONTENT:
     {content}
 
-    Remember to output as JSON and write the json key EXACTLY as written above {', '.join(str(key) for key in keys)}
+    EXTRA INSTRUCTIONS:
 
-    In terms of the 'contact_name' key, this can either be company name OR an actual name. Sometimes the name of the person is reflected by the email. for example john@example.com.
-    If you return an actual human name, return pronoun as 'du'. Otherwise return 'i'.
+    Remember to output as JSON and write the json key EXACTLY as it was written before: {', '.join(str(key) for key in keys)}
+
+    In terms of the 'contact_name' key, this can either be company name OR an actual person name. Sometimes the name of the person is reflected by the email. for example john@example.com = 'John'.
+    If you return an actual human name, only return the first name AND return pronoun as 'du'. If its a business name return pronoun as 'i', and if the business name has 'aps' in it, omit that part.
+
+    Examples:
+
+    'Lars Larsen': Name = 'Lars' and pronoun = 'du'
+    'DK Roof': Name = 'DK Roof' and pronoun = 'i'
+
+    In terms of the 'city' and 'area' only return a single datapoint, not a list. If there are several cities and areas, just return the first one.
+
+    If you are unsure of any of the datapoints, simply just write 'None'
     """,
     }
     {extra_instructions}

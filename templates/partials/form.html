@@ -6,8 +6,6 @@
     </div>
     <form method="post" hx-post="{{ url_for('campaign', campaign_name=campaign) }}" hx-target="#form-wrapper" class="col my-4">
 
-        <small class="text-danger mb-3">Sometimes there are a list of data e.g. "Benny", "Tommy", only chose ONE.</small>
-
         <input type="text" class="form-control" name="id" id="id" value="{{ id }}" hidden>
         
         <div class="mb-3">
@@ -19,6 +17,9 @@
             <label for="name" class="form-label">Name</label>
             <input type="text" class="form-control" name="name" id="name" value="{{ name }}">
             <small class="text-danger">1st priority person name 2nd priority business name</small>
+            <br>
+            <small class="text-danger mb-3">Sometimes there are a list of data e.g. "Benny", "Tommy", only chose ONE
+            <br>(that matches the correct email).</small>
         </div>
 
         <div class="mb-3">
@@ -30,6 +31,8 @@
             <label for="pronoun" class="form-label">Pronoun</label>
             <input type="text" class="form-control" name="pronoun" id="pronoun" value="{% if pronoun %}{{pronoun}}{% else %}i{% endif %}">
             <small class="text-danger">Business name = 'i' and person name = 'du'</small>
+            <br>
+            <small class="text-danger">Remove any last names (From person names)</small>
         </div>
 
         <div class="mb-3">
@@ -51,7 +54,11 @@
         
         <button type="submit" name="action" value="accept" class="btn btn-success">Accept</button>
         <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
-
+        
+        <div class="mt-5">
+            <strong>Sites you can delete:</strong>
+            <ul><li>Unrelated websites (that doesnt fit any campaign)</li><li>Webshops</li><li>Hardware</li><li>Pretty sites (I only want to contact people that need a new website)</li></ul>
+        </div>
     </form>
     <div class="col">
         <table class="table">
@@ -81,6 +88,10 @@
                 <tr>
                     <td>Area</td>
                     <td class="text-truncate" style="max-width: 150px;">{{ area }}</td>
+                </tr>
+                <tr>
+                    <td>Link</td>
+                    <td><a href="http://{{link}}" target="_blank">{{ link }}</a></td>
                 </tr>
                 <tr>
                     <td colspan="2"><img src="{{ url_for('static', filename=link + '.png') }}" class="img-fluid rounded"></td>
