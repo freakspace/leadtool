@@ -1,5 +1,14 @@
-import requests
+import os
 
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+api_endpoint = os.getenv("API_ENDPOINT")
+
+if not api_endpoint:
+    raise Exception("You need to add API_ENDPOINT to the environment")
 
 def update_link_record(
     link_id: int,
@@ -12,7 +21,7 @@ def update_link_record(
     parsed: int = 0,
     invalid: int = 0,
 ):
-    url = f"http://localhost:5000/api/update_link/{link_id}"
+    url = f"{api_endpoint}/api/update_link/{link_id}"
 
     data = {
         "content_file": content_file,
@@ -34,7 +43,7 @@ def update_link_record(
 
 
 def check_sent(domain: str = None, email: str = None):
-    url = f"http://localhost:5000/api/check_sent"
+    url = f"{api_endpoint}/api/check_sent"
 
     data = {"domain": domain, "email": email}
 
@@ -47,7 +56,7 @@ def check_sent(domain: str = None, email: str = None):
 
 
 def create_link(link: str):
-    url = f"http://localhost:5000/api/create_link"
+    url = f"{api_endpoint}/api/create_link"
 
     data = {"link": link}
 
@@ -59,7 +68,7 @@ def create_link(link: str):
 
 
 def get_links():
-    url = f"http://localhost:5000/api/links"
+    url = f"{api_endpoint}/api/links"
 
     response = requests.get(url)
     if response.status_code == 200:
@@ -71,7 +80,7 @@ def get_links():
 
 def get_links_for_parsing():
     # Get all links ready for AI parser
-    url = f"http://localhost:5000/api/links_for_parsing"
+    url = f"{api_endpoint}/api/links_for_parsing"
 
     response = requests.get(url)
     if response.status_code == 200:
