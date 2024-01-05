@@ -5,6 +5,8 @@ from selenium.webdriver.chrome.service import Service
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from services import update_link_record
 
@@ -12,8 +14,15 @@ from services import update_link_record
 
 
 def get_content_from_url(links: list, outfolder: str):
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-    driver.set_page_load_timeout(30)  # Set a timeout of 10 seconds (adjust as needed)
+    # Set the desired capabilities with the page load strategy
+    options = FirefoxOptions()
+    options.set_capability("pageLoadStrategy", "eager")
+
+    # Instantiate the Chrome driver with the specified capabilities
+    driver = webdriver.Firefox(options=options)
+
+    # Set the page load timeout
+    driver.set_page_load_timeout(30)  # Adjust the timeout as needed
 
     for record in links:
         id, link = record

@@ -21,7 +21,7 @@ def update_link_record(
     parsed: int = 0,
     invalid: int = 0,
 ):
-    url = f"{api_endpoint}/api/update_link/{link_id}"
+    url = f"http://{api_endpoint}/api/update_link/{link_id}"
 
     data = {
         "content_file": content_file,
@@ -43,7 +43,7 @@ def update_link_record(
 
 
 def check_sent(domain: str = None, email: str = None):
-    url = f"{api_endpoint}/api/check_sent"
+    url = f"http://{api_endpoint}/api/check_sent"
 
     data = {"domain": domain, "email": email}
 
@@ -56,7 +56,7 @@ def check_sent(domain: str = None, email: str = None):
 
 
 def create_link(link: str):
-    url = f"{api_endpoint}/api/create_link"
+    url = f"http://{api_endpoint}/api/create_link"
 
     data = {"link": link}
 
@@ -68,7 +68,7 @@ def create_link(link: str):
 
 
 def get_links():
-    url = f"{api_endpoint}/api/links"
+    url = f"http://{api_endpoint}/api/links"
 
     response = requests.get(url)
     if response.status_code == 200:
@@ -80,7 +80,7 @@ def get_links():
 
 def get_links_for_parsing():
     # Get all links ready for AI parser
-    url = f"{api_endpoint}/api/links_for_parsing"
+    url = f"http://{api_endpoint}/api/links_for_parsing"
 
     response = requests.get(url)
     if response.status_code == 200:
