@@ -5,3 +5,4 @@ app.log
 content/
 __pycache__/
 db
+db.sqlite3
