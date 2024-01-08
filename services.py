@@ -10,6 +10,7 @@ api_endpoint = os.getenv("API_ENDPOINT")
 if not api_endpoint:
     raise Exception("You need to add API_ENDPOINT to the environment")
 
+
 def update_link_record(
     link_id: int,
     content_file: str = None,
@@ -98,13 +99,11 @@ def create_user(username: str, password: str, superuser: bool):
         "username": username,
         "password": password,
         "superuser": superuser,
-
     }
 
     response = requests.post(url, json=data)
 
     if response.status_code == 200:
-        return 
+        return
     else:
         raise Exception("Bad request")
-

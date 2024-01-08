@@ -14,6 +14,7 @@ load_dotenv()
 
 db_name = os.getenv("DB_NAME")
 
+
 def connection(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -46,6 +47,22 @@ def connection(func):
 
 
 @connection
+def create_worklog_table(conn=None, cursor=None):
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS worklog (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            domain TEXT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            paid INTEGER DEFAULT 0,
+            FOREIGN KEY(user_id) REFERENCES user(id)
+        )
+        """
+    )
+
+
+@connection
 def create_user_table(conn=None, cursor=None):
     cursor.execute(
         """
@@ -54,7 +71,8 @@ def create_user_table(conn=None, cursor=None):
             username TEXT UNIQUE NOT NULL,
             superuser INTEGER DEFAULT 0,
             password_hash TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            pay_rate DECIMAL DEFAULT 0.06
         )
         """
     )
@@ -122,6 +140,23 @@ def create_campaign_table(conn=None, cursor=None):
             created_at TEXT DEFAULT CURRENT_TIMESTAMP)
         """
     )
+
+
+@connection
+def db_create_worklog(
+    user_id: int,
+    domain: str,
+    conn=None,
+    cursor=None,
+):
+    query = "INSERT INTO worklog (user_id, domain) VALUES (?, ?)"
+    data = (user_id, domain)
+
+    try:
+        cursor.execute(query, data)
+        conn.commit()  # Commit the transaction
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 @connection
@@ -303,6 +338,17 @@ def db_get_campaigns(conn=None, cursor=None):
 
 
 @connection
+def db_get_worklogs(user_id, conn=None, cursor=None):
+    query = "SELECT * FROM worklog WHERE user_id = ?"
+
+    cursor.execute(query, (user_id,))
+
+    rows = cursor.fetchall()
+
+    return rows
+
+
+@connection
 def db_get_links(conn=None, cursor=None):
     query = "SELECT id, link FROM link WHERE content_file IS NULL"
 
@@ -311,6 +357,14 @@ def db_get_links(conn=None, cursor=None):
     rows = cursor.fetchall()
 
     return rows
+
+
+@connection
+def db_get_user(username, conn=None, cursor=None):
+    query = "SELECT * FROM user WHERE username = ?"
+    cursor.execute(query, (username,))
+    row = cursor.fetchone()
+    return row
 
 
 # TODO Change name?
@@ -365,8 +419,6 @@ def db_get_unscraped_links(conn=None, cursor=None) -> Optional[int]:
     query = "SELECT COUNT(*) FROM link WHERE parsed = 0 AND invalid = 0 AND content_file IS NULL"
     cursor.execute(query)
     result = cursor.fetchone()
-    print("KIG")
-    print(result[0])
     return result[0] if result else None
 
 
@@ -633,4 +685,5 @@ tables = {
     "campaign": create_campaign_table,
     "sent": create_sent_table,
     "user": create_user_table,
+    "worklog": create_worklog_table,
 }

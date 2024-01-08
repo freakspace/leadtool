@@ -1,4 +1,4 @@
-<div class="" id="lead-{{lead.id}}">
+<div id="lead-{{lead.id}}">
     <form method="POST" hx-post="{{ url_for('leads', campaign_id=campaign_id) }}" class="row mb-3" hx-target="#lead-{{ lead.id }}">
         <input type="hidden" name="lead_id" value="{{ lead.id }}">
         <div class="col">

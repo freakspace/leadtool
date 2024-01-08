@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container border rounded-3 p-4 m-4 bg-light mt-5 mx-auto">
+        <h2>Worklog for {{ session['username'] }} </h2>
+        <div class="row mb-3">
+            <div class="col fw-bolder">Total pay: ${{total_pay}}</div>
+        </div>
+        <div class="row mb-2 fw-bolder">
+            <div class="col">Timestamp</div>
+            <div class="col">Domain</div>
+            <div class="col">Pay</div>
+        </div>
+        {% for log in worklogs %}
+        <div class="row">
+            <div class="col">{{log.timestamp}}</div>
+            <div class="col">{{log.domain}}</div>
+            <div class="col">${{log.pay}}</div>
+        </div>
+        {% endfor %}
+</div>
+{% endblock body %}

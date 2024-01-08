@@ -29,6 +29,9 @@ from database import (
     db_get_unparsed_links,
     db_get_unscraped_links,
     db_verify_password,
+    db_create_worklog,
+    db_get_user,
+    db_get_worklogs,
 )
 
 from schema import Link
@@ -56,6 +59,7 @@ app.secret_key = "1234"
 # TODO Clean up lead vs. link vs. domain
 # TODO Add testing
 # TODO Create a list of invalid links and check for domain rating.
+
 
 def get_lead():
     lead: Link = db_get_lead()
@@ -177,6 +181,9 @@ def get_campaign_context(campaign):
 @app.route("/<campaign_name>", methods=["GET", "POST"])
 @login_required
 def campaign(campaign_name):
+    username = session["username"]
+    user_id = db_get_user(username=username)[0]
+
     campaign = db_get_campaign(campaign_name=campaign_name)
 
     if not campaign:
@@ -217,6 +224,8 @@ def campaign(campaign_name):
 
             db_create_sent(domain=domain)
             db_delete_link(id=id)
+        print(f"Adding worklog: {user_id}, {domain}")
+        db_create_worklog(user_id=user_id, domain=domain)
 
         context = get_campaign_context(campaign=campaign)
 
@@ -293,6 +302,30 @@ def leads(campaign_id):
         return render_template("partials/lead_form.html", **context)
 
     return render_template("campaign_leads.html", **context)
+
+
+@app.route("/worklog", methods=["GET"])
+@login_required
+def worklog():
+    username = session["username"]
+    user = db_get_user(username=username)
+    worklogs_data = db_get_worklogs(user_id=user[0])
+
+    if not worklogs_data:
+        return render_template("no_worklogs.html")
+
+    # Convert each lead tuple to a dictionary
+    worklogs = []
+    total_pay = 0
+    for log in worklogs_data:
+        print(log)
+        worklog_dict = {"timestamp": log[3], "domain": log[2], "pay": user[5]}
+        worklogs.append(worklog_dict)
+        total_pay += float(user[5])
+
+    context = {"worklogs": worklogs, "total_pay": total_pay}
+
+    return render_template("worklogs.html", **context)
 
 
 @app.route("/download-csv/<campaign_id>")
