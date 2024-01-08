@@ -8,7 +8,7 @@ services:
     ports:
       - "4000:80"
     volumes:
-      - .:/usr/src/app
+      - .:/app
       - ./production.sqlite3:/app/production.sqlite3
     env_file:
       .envs/.production/.flask
