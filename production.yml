@@ -9,7 +9,11 @@ services:
       - "4000:80"
     volumes:
       - .:/usr/src/app
+      - production-db:/usr/src/app/production  # Path to the directory containing the SQLite database
     env_file:
       .envs/.production/.flask
     environment:
       - ENVIRONMENT_TYPE=production
+
+volumes:
+  production-db:  # This declares the volume used for the database

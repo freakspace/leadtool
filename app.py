@@ -56,7 +56,6 @@ app.secret_key = "1234"
 # TODO Clean up lead vs. link vs. domain
 # TODO Add testing
 # TODO Create a list of invalid links and check for domain rating
-# TODO Tester slet mig
 
 def get_lead():
     lead: Link = db_get_lead()
