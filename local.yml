@@ -9,10 +9,7 @@ services:
       - "5000:5000"
     volumes:
       - .:/app
-      - "local-db:/app/db.sqlite3"
+      - ./db.sqlite3:/app/db.sqlite3
     env_file:
       .envs/.local/.flask
     command: flask run --host=0.0.0.0 --port=5000
-
-volumes:
-  local-db:

@@ -9,11 +9,8 @@ services:
       - "4000:80"
     volumes:
       - .:/usr/src/app
-      - "production-db:/app/production.sqlite3"
+      - ./production.sqlite3:/app/production.sqlite3
     env_file:
       .envs/.production/.flask
     environment:
       - ENVIRONMENT_TYPE=production
-
-volumes:
-  production-db:
