@@ -46,8 +46,6 @@ app.register_blueprint(routes_blueprint, url_prefix="/api")
 app.secret_key = "1234"
 
 # TODO Deleting a link should also delete associated content
-# TODO Done write "None" in the field, just let them be empty, and make sure to validate its not empty when being submitted
-# TODO In form show lead count + total link count
 # TODO List of all leads with options to edit each field
 # TODO Have AI classify the design from 1 to 10
 # TODO When getting links from google sheets, skip whichever link is in sent table
