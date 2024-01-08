@@ -7,7 +7,7 @@ from driver import get_content_from_url
 from database import tables, check_table_exists
 from sheets import parse_sheet_save_url, add_sent
 from ai_parser import async_ai_parser
-from services import get_links
+from services import get_links, create_user
 
 # Configure logging
 logging.basicConfig(
@@ -32,6 +32,8 @@ async def main(config):
     Type a to get links from google sheet
     Type b to scrape content from links (Will open Chrome)
     Type c to extract info from content using ChatGPT
+    Type d to add user
+    Type e to add 'sent'
     Type x to exit
     """
         )
@@ -60,6 +62,17 @@ async def main(config):
         )
 
     if action == "d":
+        print("Name: ")
+        username = input()
+        print("Password: ")
+        pasword = input()
+        print("Superuser [n/y] ")
+        superuser = input()
+        is_superuser = superuser == "y"
+        print(f"Creating user {username}. Superuser: {is_superuser}")
+        create_user(username=username, password=pasword, superuser=is_superuser)
+
+    if action == "e":
         add_sent(spread_sheet_id=config["google_sheets"]["sheet_id"], sheet_name="sent")
 
     if action == "x":

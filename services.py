@@ -90,5 +90,21 @@ def get_links_for_parsing():
         raise Exception("Bad request")
 
 
-def create_user():
-    pass
+def create_user(username: str, password: str, superuser: bool):
+    # Get all links ready for AI parser
+    url = f"http://{api_endpoint}/api/create_user"
+
+    data = {
+        "username": username,
+        "password": password,
+        "superuser": superuser,
+
+    }
+
+    response = requests.post(url, json=data)
+
+    if response.status_code == 200:
+        return 
+    else:
+        raise Exception("Bad request")
+
