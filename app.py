@@ -321,7 +321,7 @@ def delete_leads(campaign_id):
 
         if delete == "delete":
             db_delete_leads(campaign_id=campaign_id)
-            flash("Leads deleted successfullu", "success")
+            flash("Leads deleted successfully", "success")
         else:
             flash('You need to write "delete"', "danger")
 
