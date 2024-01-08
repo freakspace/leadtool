@@ -1,0 +1,10 @@
+{
+    "google_sheets": {
+        "sheet_id": "1EKpUXIGtGp5Y8vYPXihPKnxich2_0NdZvjpULiSfe_w",
+        "sheet_names": ["urls"]
+    },
+    "out_files_folder": "content",
+    "aiparser": {
+        "keys": ["e-mail", "contact_name", "pronoun", "industry", "city", "area"]
+    }
+}

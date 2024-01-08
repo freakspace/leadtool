@@ -1,6 +1,5 @@
 .env
 .envs/
-config.json
 app.log
 content/
 __pycache__/
