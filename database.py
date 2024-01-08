@@ -12,14 +12,12 @@ from schema import Link
 
 load_dotenv()
 
-db_name = os.getenv("DB_NAME", "db")
-
-# TODO Change link to domain
-
+db_name = os.getenv("DB_NAME")
 
 def connection(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
+        print(f"Connection to: {db_name}")
         # If a connection is already provided, use it.
         conn = kwargs.pop("conn", None)
 
