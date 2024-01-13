@@ -41,6 +41,9 @@ def update_link(link_id):
             "parsed": data.get("parsed"),
             "invalid": data.get("invalid"),
             "contacted_at": data.get("contacted_at"),
+            "classification": data.get("classification")
+            if data.get("classification") is not None
+            else None,
         }
 
         # Remove None values

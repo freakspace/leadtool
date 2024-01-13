@@ -95,7 +95,8 @@ CREATE TABLE IF NOT EXISTS link(
                 parsed INTEGER DEFAULT 0,
                 invalid INTEGER DEFAULT 0,
                 contacted_at TIMESTAMP,
-                created_at TEXT DEFAULT CURRENT_TIMESTAMP)
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                classification INTEGER DEFAULT 0)
 """
     )
 
@@ -425,7 +426,7 @@ def db_get_unscraped_links(conn=None, cursor=None) -> Optional[int]:
 @connection
 def db_get_unparsed_links(conn=None, cursor=None):
     # Query all scraped links that haven't been parsed by AI yet
-    query = "SELECT id, content_file FROM link WHERE parsed = 0 AND invalid = 0 AND content_file IS NOT NULL"
+    query = "SELECT id, content_file FROM link WHERE parsed = 0 AND invalid = 0 AND classification = 0 AND content_file IS NOT NULL"
 
     cursor.execute(query)
 
@@ -540,6 +541,7 @@ def db_update_link_record(
     parsed=None,
     invalid=None,
     contacted_at=None,
+    classification=None,
     conn=None,
     cursor=None,
 ):
@@ -589,6 +591,9 @@ def db_update_link_record(
     if contacted_at is not None:
         sql += "contacted_at = ?, "
         params.append(contacted_at)
+    if classification is not None:
+        sql += "classification = ?, "
+        params.append(classification)
 
     # Remove trailing comma and space
     sql = sql.rstrip(", ")

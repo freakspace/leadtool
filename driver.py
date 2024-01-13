@@ -24,6 +24,9 @@ def get_content_from_url(links: list, outfolder: str):
     # Set the page load timeout
     driver.set_page_load_timeout(30)  # Adjust the timeout as needed
 
+    # Make the browser full screen
+    driver.maximize_window()
+
     for record in links:
         id, link = record
 

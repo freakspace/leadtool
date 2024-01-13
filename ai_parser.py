@@ -1,4 +1,5 @@
 import os
+import base64
 import sys
 import json
 import logging
@@ -7,6 +8,9 @@ import asyncio
 from openai import AsyncOpenAI
 
 from services import update_link_record, get_links_for_parsing
+
+# Classify 0-10
+# If more than X, parse content
 
 api_key = os.getenv("OPENAPI_KEY", "")
 
@@ -84,11 +88,22 @@ def has_required_keys(json_obj, required_keys):
     return all(key in json_obj for key in required_keys)
 
 
-async def async_ai_parser(outfolder: str, keys: list, attempts: int = 3):
-    links = get_links_for_parsing()
+def encode_image(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode("utf-8")
 
-    for id, path in links:
-        file_path = f"{outfolder}/{path}.txt"
+
+class AiParser:
+    def __init__(self, outfolder, keys):
+        self.outfolder = outfolder
+        self.keys = keys
+        self.links = get_links_for_parsing()
+        self.attempts = 1
+
+    async def content_parser(self, id, link):
+        """Extract content from a given text document"""
+
+        file_path = f"{self.outfolder}/{link}.txt"
         print(f"Opening {file_path}")
         with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
@@ -97,15 +112,15 @@ async def async_ai_parser(outfolder: str, keys: list, attempts: int = 3):
         data = {}
 
         while (
-            not has_required_keys(json_obj=data, required_keys=keys)
-            and count < attempts
+            not has_required_keys(json_obj=data, required_keys=self.keys)
+            and count < self.attempts
         ):
-            print(f"Parsing {path} [attempt {count+1}/{attempts}]")
+            print(f"Parsing {link} [attempt {count+1}/{self.attempts}]")
 
             extra_instructions = ""
             if count > 0:
                 extra_instructions = (
-                    f"REMEMBER to return json object with these key: {keys}"
+                    f"REMEMBER to return json object with these key: {self.keys}"
                 )
 
             count += 1
@@ -113,14 +128,16 @@ async def async_ai_parser(outfolder: str, keys: list, attempts: int = 3):
             try:
                 # Wait for the async function with a timeout
                 response = await asyncio.wait_for(
-                    async_complete_chat(content, keys, extra_instructions), timeout=20
+                    async_complete_chat(content, self.keys, extra_instructions),
+                    timeout=20,
                 )
                 data.update(json.loads(response.choices[0].message.content))
             except (json.JSONDecodeError, asyncio.TimeoutError) as e:
-                logging.error(f"Error or timeout for {path}: {e}")
+                logging.error(f"Error or timeout for {link}: {e}")
                 continue  # Skip to the next iteration on error or timeout
 
-        print(f"Updating {path} in database")
+        print(f"Data: {data}")
+        print(f"Updating {link} in database")
 
         if data:
             update_link_record(
@@ -133,5 +150,91 @@ async def async_ai_parser(outfolder: str, keys: list, attempts: int = 3):
                 parsed=1,
             )
         else:
-            logging.warning(f"No data for {path}")
+            logging.warning(f"No data for {link}")
             update_link_record(link_id=id, new_parsed=1)
+
+    # TODO After classification, maybe parse the text content?
+    async def image_classification(self, id: int, link: str):
+        """Classify a image and return a json object"""
+        print("Classifying image")
+        count = 0
+        data = {}
+
+        system_message = {
+            "role": "system",
+            "content": """
+            You are a helpful assistant which purpose is to classify websites on a scale from 1 to 10, where 1 is the lowest and 10 the highest. 
+            You are tasked to return two different outputs: a numerical classification from 0 to 10 and a verbose description.
+            Classification should be based on the quality of the website: Specifically the look and feel (how well is it designed?), best practices (use of good and large images, CTA-buttons), ui, ux, etc.
+            The verbose description should just explain whats in the image
+            You should return your response as a json object with the following keys: 'classification' and 'description'
+            """,
+        }
+
+        # Path to your image
+        image_path = f"{self.outfolder}/{link}.png"
+
+        # Getting the base64 string
+        base64_image = encode_image(image_path)
+
+        user_message = {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Please classify and describe the following website screenshot",
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/png;base64,{base64_image}",
+                        "detail": "high",
+                    },
+                },
+            ],
+        }
+
+        while (
+            not has_required_keys(json_obj=data, required_keys="classification")
+            and count < self.attempts
+        ):
+            response = await asyncio.wait_for(
+                client.chat.completions.create(
+                    model="gpt-4-vision-preview",
+                    messages=[system_message, user_message],
+                    max_tokens=500,
+                ),
+                timeout=20,
+            )
+
+            # Extracting the message content
+            message_content = response.choices[0].message.content
+
+            # Stripping the triple backticks and any other non-JSON content
+            json_string = message_content.strip("```json\n")
+
+            # Parsing the string to a JSON object
+            json_object = json.loads(json_string)
+
+            data.update(json_object)
+
+            print(f"Data: {data}")
+
+            classification = data.get("classification", 0)
+            print(f"Updating link with classification: {classification}")
+            # Update link return with the classification
+            update_link_record(link_id=id, classification=classification)
+
+            if classification <= 6:
+                print("Classification less than 6, initializing content parser")
+                await self.content_parser(id=id, link=link)
+
+            count += 1
+
+    async def run(self):
+        print("Starting AI parser...")
+        print(f"There are {len(self.links)} links")
+        for id, link in self.links:
+            print(f"Parsing {link}")
+            await self.image_classification(id=id, link=link)
+            break

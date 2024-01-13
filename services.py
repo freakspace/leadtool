@@ -21,6 +21,7 @@ def update_link_record(
     area: str = None,
     parsed: int = 0,
     invalid: int = 0,
+    classification: int = None,
 ):
     url = f"http://{api_endpoint}/api/update_link/{link_id}"
 
@@ -33,6 +34,7 @@ def update_link_record(
         "area": area,
         "parsed": parsed,
         "invalid": invalid,
+        "classification": classification,
     }
 
     response = requests.post(url, json=data)

@@ -6,7 +6,7 @@ from driver import get_content_from_url
 
 from database import tables, check_table_exists
 from sheets import parse_sheet_save_url, add_sent
-from ai_parser import async_ai_parser
+from ai_parser import AiParser
 from services import get_links, create_user
 
 # Configure logging
@@ -56,10 +56,10 @@ async def main(config):
         get_content_from_url(links=links, outfolder=config["out_files_folder"])
 
     if action == "c":
-        # Run the ai_parser coroutine
-        await async_ai_parser(
+        parser = AiParser(
             outfolder=config["out_files_folder"], keys=config["aiparser"]["keys"]
         )
+        await parser.run()
 
     if action == "d":
         print("Name: ")
