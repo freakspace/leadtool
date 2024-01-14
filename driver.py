@@ -16,7 +16,7 @@ from services import update_link_record
 def get_content_from_url(links: list, outfolder: str):
     # Set the desired capabilities with the page load strategy
     options = FirefoxOptions()
-    options.set_capability("pageLoadStrategy", "eager")
+    options.set_capability("pageLoadStrategy", "normal")
 
     # Instantiate the Chrome driver with the specified capabilities
     driver = webdriver.Firefox(options=options)

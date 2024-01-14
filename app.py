@@ -113,48 +113,6 @@ def home():
     return render_template("campaigns.html", **context)
 
 
-@app.route("/email-form", methods=["GET", "POST"])
-@login_required
-def email_form():
-    context = get_lead()
-
-    with open("templates/emails/email.txt", "r", encoding="utf-8") as file:
-        email_template = file.read()
-
-    jinja_template = Template(email_template)
-    email_content = jinja_template.render(**context)
-
-    context["email_subject"] = "Et par ideer"
-    context["email_content"] = email_content
-
-    if not context:
-        return render_template("no_leads.html")
-
-    if request.method == "POST":
-        action = request.form.get("action")
-        id = request.form.get("id")
-
-        if action == "delete":
-            db_delete_link(id=id)
-
-        if action == "sent":
-            db_delete_link(id=id)
-            db_create_sent(domain=context["link"])
-
-        # Get a new lead
-        context = get_lead()
-
-        jinja_template = Template(email_template)
-        email_content = jinja_template.render(**context)
-
-        context["email_subject"] = "Et par ideer"
-        context["email_content"] = email_content
-
-        return render_template("partials/email-form.html", **context)
-
-    return render_template("email.html", **context)
-
-
 def get_campaign_context(campaign):
     campaign_id, campaign_name, _ = campaign
 
@@ -195,7 +153,7 @@ def campaign(campaign_name):
     context = get_campaign_context(campaign=campaign)
 
     if not context:
-        return render_template("no_leads.html")
+        return render_template("no_leads.html", campaign_id=campaign_id)
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -250,7 +208,7 @@ def leads(campaign_id):
     leads_data = db_get_leads(campaign_id=campaign_id)
 
     if not leads_data:
-        return render_template("no_leads.html")
+        return render_template("no_leads.html", campaign_id=campaign_id)
 
     # Convert each lead tuple to a dictionary
     leads = []

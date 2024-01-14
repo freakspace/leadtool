@@ -2,6 +2,7 @@
 .envs/
 app.log
 content/
+contentbackup/
 __pycache__/
 db
 production
