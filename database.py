@@ -351,7 +351,7 @@ def db_get_worklogs(user_id, conn=None, cursor=None):
 
 @connection
 def db_get_links(conn=None, cursor=None):
-    query = "SELECT id, link FROM link WHERE content_file IS NULL"
+    query = "SELECT id, link FROM link WHERE content_file IS NULL AND invalid = 0"
 
     cursor.execute(query)
 
@@ -373,14 +373,14 @@ def db_get_user(username, conn=None, cursor=None):
 def db_get_lead(conn=None, cursor=None) -> Optional[Link]:
     # Query to select links that are parsed, have an email, and are not present in the 'sent' table
     query = """
-    SELECT l.* FROM link l
+    SELECT l.id, l.link, l.content_file, l.email, l.contact_name, l.pronoun, l.industry, l.city, l.area, l.parsed FROM link l
     LEFT JOIN sent s ON l.link = s.domain
     WHERE l.parsed = 1 AND l.email != 'None' AND s.id IS NULL
     LIMIT 1
     """
     cursor.execute(query)
     row = cursor.fetchone()
-
+    print(row)
     if row is not None:
         link_data = {
             "id": row[0],
@@ -388,12 +388,11 @@ def db_get_lead(conn=None, cursor=None) -> Optional[Link]:
             "content_file": row[2],
             "email": row[3],
             "contact_name": row[4],
-            "industry": row[5],
-            "city": row[6],
-            "area": row[7],
-            "parsed": bool(row[8]),
-            "contacted_at": row[9],
-            "created_at": row[10],
+            "pronoun": row[5],
+            "industry": row[6],
+            "city": row[7],
+            "area": row[8],
+            "parsed": bool(row[9]),
         }
         return Link(**link_data)
     else:

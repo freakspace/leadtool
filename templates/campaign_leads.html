@@ -1,6 +1,18 @@
 {% extends 'base.html' %}
 {% block body %}
+
 <div class="container-fluid border rounded-3 p-4 m-4 bg-light mt-5">
+    <div class="d-flex">
+        <form action="/download-csv/{{campaign_id}}" method="get" class="me-3">
+            <button class="btn btn-primary" type="submit">Download CSV</button>
+        </form>
+        <form action="/delete-leads/{{campaign_id}}" method="post">
+            <div class="input-group">
+                <button class="btn btn-danger col" type="submit">Delete Leads</button>
+                <input type="text" placeholder="Type 'delete'" class="form-control" name="delete" id="delete">
+            </div>
+        </form>
+    </div>
     <h2>Leads</h2>
         <div class="row mb-2 font-weight-bold">
             <div class="col">Name</div>

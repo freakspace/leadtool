@@ -7,6 +7,7 @@ from database import (
     db_get_links,
     db_get_unparsed_links,
     db_create_user,
+    db_get_campaigns,
 )
 
 routes_blueprint = Blueprint("routes_blueprint", __name__)
@@ -79,6 +80,12 @@ def create_link():
 def get_links():
     links = db_get_links()
     return jsonify({"links": links}), 200
+
+
+@routes_blueprint.route("/campaigns", methods=["GET"])
+def get_campaigns():
+    campaigns = db_get_campaigns()
+    return jsonify({"campaigns": campaigns}), 200
 
 
 @routes_blueprint.route("/links_for_parsing", methods=["GET"])

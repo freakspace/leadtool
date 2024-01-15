@@ -60,6 +60,7 @@ app.secret_key = "1234"
 # TODO Add testing
 # TODO Create a list of invalid links and check for domain rating.
 # TODO Vis link i leadlist
+# TODO Aiparser should also check the industry that it conforms with the expectaion
 
 
 def get_lead():
@@ -73,6 +74,7 @@ def get_lead():
         "link": lead.link,
         "email": lead.email,
         "name": lead.contact_name,
+        "pronoun": lead.pronoun,
         "industry": lead.industry,
         "city": lead.city,
         "area": lead.area,
@@ -151,7 +153,8 @@ def campaign(campaign_name):
     campaign_id = campaign[0]
 
     context = get_campaign_context(campaign=campaign)
-
+    print("KIG")
+    print(context)
     if not context:
         return render_template("no_leads.html", campaign_id=campaign_id)
 

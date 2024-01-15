@@ -59,7 +59,7 @@ async def main(config):
         parser = AiParser(
             outfolder=config["out_files_folder"], keys=config["aiparser"]["keys"]
         )
-        await parser.run()
+        await parser.run(image_classification=False)
 
     if action == "d":
         print("Name: ")

@@ -16,6 +16,7 @@ pydantic = "*"
 pytz = "*"
 gunicorn = "*"
 bcrypt = "*"
+pillow = "*"
 
 [dev-packages]
 

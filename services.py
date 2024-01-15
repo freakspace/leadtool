@@ -16,6 +16,7 @@ def update_link_record(
     content_file: str = None,
     email: str = None,
     contact_name: str = None,
+    pronoun: str = None,
     industry: str = None,
     city: str = None,
     area: str = None,
@@ -29,6 +30,7 @@ def update_link_record(
         "content_file": content_file,
         "email": email,
         "contact_name": contact_name,
+        "pronoun": pronoun,
         "industry": industry,
         "city": city,
         "area": area,
@@ -89,6 +91,18 @@ def get_links_for_parsing():
     if response.status_code == 200:
         data = response.json()
         return data["links"]
+    else:
+        raise Exception("Bad request")
+
+
+def get_campaigns():
+    # Get all links ready for AI parser
+    url = f"http://{api_endpoint}/api/campaigns"
+
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        return data["campaigns"]
     else:
         raise Exception("Bad request")
 
