@@ -19,11 +19,11 @@ def extract_domain(url):
     return domain
 
 
-def generate_csv(leads):
+def generate_csv(leads, columns):
     # Generate CSV in memory
     si = io.StringIO()
     cw = csv.writer(si)
-    cw.writerow(["id", "email", "name", "domain", "pronoun", "area"])
+    cw.writerow(columns)
     cw.writerows(leads)
     output = si.getvalue()
     si.close()

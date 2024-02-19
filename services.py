@@ -7,6 +7,8 @@ load_dotenv()
 
 api_endpoint = os.getenv("API_ENDPOINT")
 
+print(f"Connecting to: {api_endpoint}")
+
 if not api_endpoint:
     raise Exception("You need to add API_ENDPOINT to the environment")
 

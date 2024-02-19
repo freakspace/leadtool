@@ -38,6 +38,23 @@
 </div>
 <div class="container border rounded-3 p-4 bg-light mt-5">
     <div class="row">
+        <div class="col-6">
+            <form action="/dump-all" method="get">
+                <div class="input-group">
+                    <button class="btn btn-success col" type="submit">Export all</button>
+                </div>
+            </form>
+            <form action="/delete-all" method="post">
+                <div class="input-group">
+                    <button class="btn btn-danger col" type="submit">Delete all</button>
+                    <input type="text" placeholder="Type 'delete'" class="form-control" name="delete" id="delete">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="container border rounded-3 p-4 bg-light mt-5">
+    <div class="row">
         <div class="col-12">
             <form method="POST" class="form-inline">
                 <div class="mb-3">

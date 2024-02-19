@@ -380,7 +380,6 @@ def db_get_lead(conn=None, cursor=None) -> Optional[Link]:
     """
     cursor.execute(query)
     row = cursor.fetchone()
-    print(row)
     if row is not None:
         link_data = {
             "id": row[0],
@@ -458,6 +457,34 @@ def db_get_leads(campaign_id, conn=None, cursor=None):
     rows = cursor.fetchall()
 
     return rows
+
+
+@connection
+def db_get_all_leads(conn=None, cursor=None):
+    query = """
+    SELECT link, email, contact_name, pronoun, area FROM link
+    WHERE parsed = 1 AND email != 'None' AND area != 'None' AND contact_name != 'None'
+    AND link NOT IN (
+        SELECT domain FROM sent
+    )
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+    return result
+
+
+@connection
+def db_delete_all_leads(conn=None, cursor=None):
+    query = """
+    DELETE FROM link
+    WHERE parsed = 1 AND email != 'None' AND area != 'None' AND contact_name != 'None'
+    AND link NOT IN (
+        SELECT domain FROM sent
+    )
+    """
+    cursor.execute(query)
+    conn.commit()
+    return cursor.rowcount
 
 
 @connection

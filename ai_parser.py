@@ -160,7 +160,7 @@ class AiParser:
             )
         else:
             logging.warning(f"No data for {link}")
-            update_link_record(link_id=id, new_parsed=1)
+            update_link_record(link_id=id, parsed=1)
 
     # TODO After classification, maybe parse the text content?
     async def image_classification(self, id: int, link: str):
@@ -257,4 +257,7 @@ class AiParser:
                     logging.error(f"Error trying to parse image: {e}")
                 break
             else:
-                await self.content_parser(id=id, link=link)
+                try:
+                    await self.content_parser(id=id, link=link)
+                except Exception as e:
+                    logging.error(f"Error parsing content: {e}")

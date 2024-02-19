@@ -9,11 +9,12 @@ from flask import (
     flash,
     session,
 )
-from jinja2 import Template
 
 from database import (
     db_get_lead,
     db_get_leads,
+    db_get_all_leads,
+    db_delete_all_leads,
     db_create_lead,
     db_create_sent,
     db_delete_link,
@@ -48,6 +49,7 @@ app.register_blueprint(routes_blueprint, url_prefix="/api")
 
 app.secret_key = "1234"
 
+
 # TODO Deleting a link should also delete associated content
 # TODO List of all leads with options to edit each field
 # TODO Have AI classify the design from 1 to 10
@@ -61,8 +63,9 @@ app.secret_key = "1234"
 # TODO Create a list of invalid links and check for domain rating.
 # TODO Vis link i leadlist
 # TODO Aiparser should also check the industry that it conforms with the expectaion
-
-
+# TODO Categories links when parsing?
+# TODO Make it possible to send a list of links instead of one at a time
+# TODO Make a function to export all pre-leads, just remove the ones with "none" fields.
 def get_lead():
     lead: Link = db_get_lead()
 
@@ -153,8 +156,7 @@ def campaign(campaign_name):
     campaign_id = campaign[0]
 
     context = get_campaign_context(campaign=campaign)
-    print("KIG")
-    print(context)
+
     if not context:
         return render_template("no_leads.html", campaign_id=campaign_id)
 
@@ -280,7 +282,6 @@ def worklog():
     worklogs = []
     total_pay = 0
     for log in worklogs_data:
-        print(log)
         worklog_dict = {"timestamp": log[3], "domain": log[2], "pay": user[5]}
         worklogs.append(worklog_dict)
         total_pay += float(user[5])
@@ -294,12 +295,39 @@ def worklog():
 def download_csv(campaign_id):
     # TODO Check for sent
     leads = db_get_leads(campaign_id)
-    csv_content = generate_csv(leads)
+    csv_content = generate_csv(
+        leads, ["id", "email", "name", "domain", "pronoun", "area"]
+    )
     return Response(
         csv_content,
         mimetype="text/csv",
         headers={"Content-disposition": "attachment; filename=export.csv"},
     )
+
+
+@app.route("/dump-all", methods=["GET"])
+def dump_all():
+    leads = db_get_all_leads()
+    csv_content = generate_csv(leads, ["domain", "email", "name", "pronoun", "area"])
+    return Response(
+        csv_content,
+        mimetype="text/csv",
+        headers={"Content-disposition": "attachment; filename=export.csv"},
+    )
+
+
+@app.route("/delete-all", methods=["POST"])
+def delete_all():
+    if request.method == "POST":
+        delete = request.form.get("delete")
+
+        if delete == "delete":
+            db_delete_all_leads()
+            flash("Leads deleted successfully", "success")
+        else:
+            flash('You need to write "delete"', "danger")
+
+        return redirect(url_for("home"))
 
 
 @app.route("/delete-leads/<campaign_id>", methods=["POST"])
