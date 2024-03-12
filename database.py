@@ -478,7 +478,7 @@ def db_get_all_leads(conn=None, cursor=None):
 def db_delete_all_leads(conn=None, cursor=None):
     query = """
     DELETE FROM link
-    WHERE parsed = 1 AND email != 'None' AND area != 'None' AND contact_name != 'None'
+    WHERE parsed = 1 AND LOWER(email) != 'none' AND LOWER(area) != 'none' AND LOWER(contact_name) != 'none'
     AND link NOT IN (
         SELECT domain FROM sent
     )
