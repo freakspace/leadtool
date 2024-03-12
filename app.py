@@ -66,6 +66,9 @@ app.secret_key = "1234"
 # TODO Categories links when parsing?
 # TODO Make it possible to send a list of links instead of one at a time
 # TODO Make a function to export all pre-leads, just remove the ones with "none" fields.
+# TODO Normalize data None vs none
+
+
 def get_lead():
     lead: Link = db_get_lead()
 
@@ -88,7 +91,6 @@ def get_lead():
 
 
 @app.route("/", methods=["GET", "POST"])
-@login_required
 def home():
     if request.method == "POST":
         campaign_name = request.form.get("campaign_name")

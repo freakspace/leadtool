@@ -459,11 +459,12 @@ def db_get_leads(campaign_id, conn=None, cursor=None):
     return rows
 
 
+# TODO Data should be normalized e.g. None = none etc
 @connection
 def db_get_all_leads(conn=None, cursor=None):
     query = """
     SELECT link, email, contact_name, pronoun, area FROM link
-    WHERE parsed = 1 AND email != 'None' AND area != 'None' AND contact_name != 'None'
+    WHERE parsed = 1 AND LOWER(email) != 'none' AND LOWER(area) != 'none' AND LOWER(contact_name) != 'none'
     AND link NOT IN (
         SELECT domain FROM sent
     )

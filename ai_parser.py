@@ -26,9 +26,6 @@ system_message = {
     "content": "You are a helpful assistant designed to output JSON. You will be given a piece of content (text from a website), and instructed by the user to extract certain information. Remember to return as JSON. Do not return any translations, only the raw string data.",
 }
 
-# Remember to output as JSON and write the json key EXACTLY as it was written before: {', '.join(str(key) for key in keys)}
-# In terms of the 'city' and 'area' only return a single datapoint, not a list. If there are several cities and areas, just return the first one.
-
 
 def get_user_message(
     content: str, keys: list, campaigns: list, extra_instructions: str = None
@@ -59,6 +56,10 @@ def get_user_message(
     Remember to ask yourself what the pronoun should be
 
     In terms of 'industry' select only one of the following that are applicable: {', '.join(str(campaign) for campaign in campaigns)}
+
+    In terms of area Only return one area, not a list. If there are more areas than one, just return the first. By area I mean city or greater area (for example a state).
+    
+    Do NOT add example data. If you are not sure, write 'None'
     """,
     }
     {extra_instructions}
@@ -146,7 +147,6 @@ class AiParser:
                 continue  # Skip to the next iteration on error or timeout
 
         print(f"Updating {link} in database")
-
         if data:
             update_link_record(
                 link_id=id,
